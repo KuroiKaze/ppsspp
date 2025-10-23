@@ -1,0 +1,3 @@
+/Users/longnguyen/Downloads/ppsspp/build/CMakeFiles/hello.dir
+/Users/longnguyen/Downloads/ppsspp/build/CMakeFiles/edit_cache.dir
+/Users/longnguyen/Downloads/ppsspp/build/CMakeFiles/rebuild_cache.dir
