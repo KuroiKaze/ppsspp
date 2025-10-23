@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.11)
 
-project(hello)
+project(retro_game)
 
 add_executable(${PROJECT_NAME} main.c)
 
