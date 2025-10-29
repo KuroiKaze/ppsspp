@@ -2,114 +2,141 @@
 #include <pspctrl.h>
 #include <pspdisplay.h>
 #include <pspgu.h>
-#include <memory.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 #define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
+#include "stb_image.h"
 
-PSP_MODULE_INFO("texture", 0, 1, 0);
+// PSP module info
+PSP_MODULE_INFO("texture_demo", 0, 1, 0);
 PSP_MAIN_THREAD_ATTR(THREAD_ATTR_USER);
 
+// Screen constants
 #define BUFFER_WIDTH 512
 #define BUFFER_HEIGHT 272
 #define SCREEN_WIDTH 480
-#define SCREEN_HEIGHT BUFFER_HEIGHT
+#define SCREEN_HEIGHT 272
 
 typedef struct
 {
     float u, v;
-    uint32_t colour;
+    unsigned int colour;
     float x, y, z;
 } TextureVertex;
 
 typedef struct
 {
     int width, height;
-    uint32_t * data;
+    unsigned int *data;
 } Texture;
 
-char list[0x20000] __attribute__((aligned(64)));
+// Global variables
+static unsigned int __attribute__((aligned(16))) list[262144];
+int running = 1;
+void *fbp0, *fbp1;
 
-void * fbp0;
-void * fbp1;
-int running;
-
-int exit_callback(int arg1, int arg2, void *common) {
+// ==== Exit callback handling ====
+int exit_callback(int arg1, int arg2, void *common)
+{
     running = 0;
     return 0;
 }
 
-int callback_thread(SceSize args, void *argp) {
+int callback_thread(SceSize args, void *argp)
+{
     int cbid = sceKernelCreateCallback("Exit Callback", exit_callback, NULL);
     sceKernelRegisterExitCallback(cbid);
     sceKernelSleepThreadCB();
     return 0;
 }
 
-int setup_callbacks(void) {
-    int thid = sceKernelCreateThread("update_thread", callback_thread, 0x11, 0xFA0, 0, 0);
-    if(thid >= 0)
+int setup_callbacks(void)
+{
+    int thid = sceKernelCreateThread("callback_thread", callback_thread, 0x11, 0xFA0, 0, 0);
+    if (thid >= 0)
         sceKernelStartThread(thid, 0, 0);
     return thid;
 }
 
-void initGu(){
+// ==== Graphics setup ====
+void initGu()
+{
     sceGuInit();
 
     fbp0 = guGetStaticVramBuffer(BUFFER_WIDTH, BUFFER_HEIGHT, GU_PSM_8888);
     fbp1 = guGetStaticVramBuffer(BUFFER_WIDTH, BUFFER_HEIGHT, GU_PSM_8888);
 
-    //Set up buffers
     sceGuStart(GU_DIRECT, list);
     sceGuDrawBuffer(GU_PSM_8888, fbp0, BUFFER_WIDTH);
-    sceGuDispBuffer(SCREEN_WIDTH,SCREEN_HEIGHT,fbp1, BUFFER_WIDTH);
+    sceGuDispBuffer(SCREEN_WIDTH, SCREEN_HEIGHT, fbp1, BUFFER_WIDTH);
+    sceGuDepthBuffer(fbp0, 0);
 
-    // We do not care about the depth buffer in this example
-    sceGuDepthBuffer(fbp0, 0); // Set depth buffer to a length of 0
-    sceGuDisable(GU_DEPTH_TEST); // Disable depth testing
-
-    //Set up viewport
+    sceGuDisable(GU_DEPTH_TEST);
     sceGuOffset(2048 - (SCREEN_WIDTH / 2), 2048 - (SCREEN_HEIGHT / 2));
     sceGuViewport(2048, 2048, SCREEN_WIDTH, SCREEN_HEIGHT);
-    sceGuEnable(GU_SCISSOR_TEST);
     sceGuScissor(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    sceGuEnable(GU_SCISSOR_TEST);
 
-    // Start a new frame and enable the display
     sceGuFinish();
+    sceGuSync(0, 0);
+    sceDisplayWaitVblankStart();
     sceGuDisplay(GU_TRUE);
 }
 
-void endGu(){
+void endGu()
+{
     sceGuDisplay(GU_FALSE);
     sceGuTerm();
 }
 
-void startFrame(){
+void startFrame()
+{
     sceGuStart(GU_DIRECT, list);
-    sceGuClearColor(0xFFFFFFFF); // White background
+    sceGuClearColor(0xFFFFFFFF);
     sceGuClear(GU_COLOR_BUFFER_BIT);
 }
 
-void endFrame(){
+void endFrame()
+{
     sceGuFinish();
     sceGuSync(0, 0);
     sceDisplayWaitVblankStart();
     sceGuSwapBuffers();
 }
 
-Texture * loadTexture(const char * filename) {
-    Texture * texture = (Texture *) calloc(1, sizeof(Texture));
+// ==== Texture loading ====
+Texture *loadTexture(const char *filename)
+{
+    Texture *texture = (Texture *)calloc(1, sizeof(Texture));
 
-    texture->data = (uint32_t *) stbi_load("resources/sprites/grass.png", &(texture->width), &(texture->height), NULL, STBI_rgb_alpha);
+    texture->data = (unsigned int *)stbi_load(filename, &texture->width, &texture->height, NULL, STBI_rgb_alpha);
+    if (!texture->data)
+    {
+        printf("Fehler: konnte Textur nicht laden: %s\n", filename);
+        free(texture);
+        return NULL;
+    }
 
-    // Make sure the texture cache is reloaded
     sceKernelDcacheWritebackInvalidateAll();
-
     return texture;
 }
 
-void drawTexture(Texture * texture, float x, float y, float w, float h) {
-    static TextureVertex vertices[2];
+void freeTexture(Texture *texture)
+{
+    if (texture)
+    {
+        if (texture->data)
+            stbi_image_free(texture->data);
+        free(texture);
+    }
+}
+
+// ==== Texture drawing ====
+void drawTexture(Texture *texture, float x, float y, float w, float h)
+{
+    TextureVertex *vertices = (TextureVertex *)sceGuGetMemory(2 * sizeof(TextureVertex));
 
     vertices[0].u = 0.0f;
     vertices[0].v = 0.0f;
@@ -118,8 +145,8 @@ void drawTexture(Texture * texture, float x, float y, float w, float h) {
     vertices[0].y = y;
     vertices[0].z = 0.0f;
 
-    vertices[1].u = w;
-    vertices[1].v = h;
+    vertices[1].u = (float)texture->width;
+    vertices[1].v = (float)texture->height;
     vertices[1].colour = 0xFFFFFFFF;
     vertices[1].x = x + w;
     vertices[1].y = y + h;
@@ -130,35 +157,42 @@ void drawTexture(Texture * texture, float x, float y, float w, float h) {
     sceGuTexImage(0, texture->width, texture->height, texture->width, texture->data);
 
     sceGuEnable(GU_TEXTURE_2D);
-    sceGuDrawArray(GU_SPRITES, GU_COLOR_8888 | GU_TEXTURE_32BITF | GU_VERTEX_32BITF | GU_TRANSFORM_2D, 2, 0, vertices);
+    sceGuDrawArray(GU_SPRITES,
+                   GU_TEXTURE_32BITF | GU_COLOR_8888 | GU_VERTEX_32BITF | GU_TRANSFORM_2D,
+                   2, 0, vertices);
     sceGuDisable(GU_TEXTURE_2D);
 }
 
-
-int main() {
-    // Make exiting with the home button possible
+// ==== Main ====
+int main()
+{
     setup_callbacks();
-
-    // Create a texture from a file
-    Texture * texture = loadTexture("grass.png");
-
-    // Start rendering
     initGu();
 
-    running = 1;
-    while(running){
+    Texture *texture = loadTexture("resources/sprites/grass.png");
+    if (!texture)
+    {
+        printf("Textur konnte nicht geladen werden!\n");
+        endGu();
+        sceKernelExitGame();
+        return 0;
+    }
+
+    while (running)
+    {
         startFrame();
 
-        drawTexture(texture, SCREEN_WIDTH / 2 - texture->width / 2, SCREEN_HEIGHT / 2 - texture->height / 2, texture->width, texture->height);
+        drawTexture(texture,
+                    (SCREEN_WIDTH - texture->width) / 2,
+                    (SCREEN_HEIGHT - texture->height) / 2,
+                    texture->width, texture->height);
 
         endFrame();
     }
-    // Stop rendering
+
+    freeTexture(texture);
     endGu();
 
-    // Clean up
-    stbi_image_free(texture->data);
-    free(texture);
-
+    sceKernelExitGame();
     return 0;
 }

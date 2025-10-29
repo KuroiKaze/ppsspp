@@ -23,7 +23,6 @@ CMakeFiles/texture.dir/main.c.obj: main.c \
   /Users/longnguyen/pspdev/psp/include/machine/time.h \
   /Users/longnguyen/pspdev/psp/include/machine/types.h \
   /Users/longnguyen/pspdev/psp/include/math.h \
-  /Users/longnguyen/pspdev/psp/include/memory.h \
   /Users/longnguyen/pspdev/psp/include/newlib.h \
   /Users/longnguyen/pspdev/psp/include/signal.h \
   /Users/longnguyen/pspdev/psp/include/stb_image.h \
@@ -121,6 +120,8 @@ CMakeFiles/texture.dir/main.c.obj: main.c \
 
 /Users/longnguyen/pspdev/psp/sdk/include/pspintrman.h:
 
+/Users/longnguyen/pspdev/psp/sdk/include/pspdisplay.h:
+
 /Users/longnguyen/pspdev/psp/include/time.h:
 
 /Users/longnguyen/pspdev/psp/include/sys/types.h:
@@ -136,8 +137,6 @@ CMakeFiles/texture.dir/main.c.obj: main.c \
 /Users/longnguyen/pspdev/psp/sdk/include/pspmodulemgr_kernel.h:
 
 /Users/longnguyen/pspdev/psp/include/sys/string.h:
-
-/Users/longnguyen/pspdev/psp/include/sys/stdio.h:
 
 /Users/longnguyen/pspdev/psp/include/sys/config.h:
 
@@ -209,17 +208,13 @@ CMakeFiles/texture.dir/main.c.obj: main.c \
 
 /Users/longnguyen/pspdev/psp/include/machine/time.h:
 
+/Users/longnguyen/pspdev/psp/include/sys/stdio.h:
+
 /Users/longnguyen/pspdev/psp/include/sys/signal.h:
 
 /Users/longnguyen/pspdev/psp/include/limits.h:
 
 /Users/longnguyen/pspdev/psp/include/assert.h:
-
-/Users/longnguyen/pspdev/psp/include/string.h:
-
-/Users/longnguyen/pspdev/psp/sdk/include/pspdisplay.h:
-
-/Users/longnguyen/pspdev/psp/include/memory.h:
 
 /Users/longnguyen/pspdev/psp/sdk/include/pspiofilemgr_fcntl.h:
 
@@ -250,6 +245,8 @@ main.c:
 /Users/longnguyen/pspdev/psp/include/sys/reent.h:
 
 /Users/longnguyen/pspdev/lib/gcc/psp/15.1.1/include/stdint.h:
+
+/Users/longnguyen/pspdev/psp/include/string.h:
 
 /Users/longnguyen/pspdev/psp/sdk/include/pspgu.h:
 
