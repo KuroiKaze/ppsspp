@@ -1,0 +1,1 @@
+/Users/longnguyen/pspdev/bin/psp-gcc -I/Users/longnguyen/pspdev/psp/include -I/Users/longnguyen/pspdev/psp/sdk/include -DPSP -L/Users/longnguyen/pspdev/lib -L/Users/longnguyen/pspdev/psp/lib -L/Users/longnguyen/pspdev/psp/sdk/lib -Wl,-zmax-page-size=128 CMakeFiles/texture.dir/main.c.obj -o texture  -lpspgu -lpspge -lpspdisplay
