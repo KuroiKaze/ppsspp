@@ -67,8 +67,8 @@ CMakeFiles/texture.dir/main.c.obj: \
  /Users/longnguyen/pspdev/psp/sdk/include/pspkdebug.h \
  /Users/longnguyen/pspdev/psp/sdk/include/pspintrman_kernel.h \
  /Users/longnguyen/pspdev/psp/sdk/include/pspmodulemgr_kernel.h \
- /Users/longnguyen/pspdev/psp/sdk/include/pspctrl.h \
  /Users/longnguyen/pspdev/psp/sdk/include/pspdisplay.h \
+ /Users/longnguyen/pspdev/psp/sdk/include/pspctrl.h \
  /Users/longnguyen/pspdev/psp/sdk/include/pspgu.h \
  /Users/longnguyen/pspdev/psp/sdk/include/pspge.h \
  /Users/longnguyen/pspdev/psp/include/stdlib.h \
@@ -77,9 +77,9 @@ CMakeFiles/texture.dir/main.c.obj: \
  /Users/longnguyen/pspdev/psp/include/stdio.h \
  /Users/longnguyen/pspdev/lib/gcc/psp/15.1.1/include/stdarg.h \
  /Users/longnguyen/pspdev/psp/include/sys/stdio.h \
+ /Users/longnguyen/pspdev/psp/include/stb_image.h \
  /Users/longnguyen/pspdev/psp/include/string.h \
  /Users/longnguyen/pspdev/psp/include/strings.h \
  /Users/longnguyen/pspdev/psp/include/sys/string.h \
- /Users/longnguyen/pspdev/psp/include/stb_image.h \
  /Users/longnguyen/pspdev/psp/include/math.h \
  /Users/longnguyen/pspdev/psp/include/assert.h

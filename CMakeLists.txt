@@ -8,6 +8,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         pspgu
         pspge
         pspdisplay
+        pspctrl
+        pspuser
 )
 
 # Create an EBOOT.PBP file

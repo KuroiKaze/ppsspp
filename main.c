@@ -1,59 +1,50 @@
 #include <pspkernel.h>
-#include <pspctrl.h>
 #include <pspdisplay.h>
+#include <pspctrl.h>
 #include <pspgu.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-// PSP module info
-PSP_MODULE_INFO("texture_demo", 0, 1, 0);
+PSP_MODULE_INFO("Sprite_Move", 0, 1, 0);
 PSP_MAIN_THREAD_ATTR(THREAD_ATTR_USER);
 
-// Screen constants
 #define BUFFER_WIDTH 512
 #define BUFFER_HEIGHT 272
 #define SCREEN_WIDTH 480
 #define SCREEN_HEIGHT 272
 
-typedef struct
-{
+typedef struct {
     float u, v;
     unsigned int colour;
     float x, y, z;
 } TextureVertex;
 
-typedef struct
-{
+typedef struct {
     int width, height;
     unsigned int *data;
 } Texture;
 
-// Global variables
 static unsigned int __attribute__((aligned(16))) list[262144];
 int running = 1;
 void *fbp0, *fbp1;
 
-// ==== Exit callback handling ====
-int exit_callback(int arg1, int arg2, void *common)
-{
+// ==== Exit Callback ====
+int exit_callback(int arg1, int arg2, void *common) {
     running = 0;
     return 0;
 }
 
-int callback_thread(SceSize args, void *argp)
-{
+int callback_thread(SceSize args, void *argp) {
     int cbid = sceKernelCreateCallback("Exit Callback", exit_callback, NULL);
     sceKernelRegisterExitCallback(cbid);
     sceKernelSleepThreadCB();
     return 0;
 }
 
-int setup_callbacks(void)
-{
+int setup_callbacks(void) {
     int thid = sceKernelCreateThread("callback_thread", callback_thread, 0x11, 0xFA0, 0, 0);
     if (thid >= 0)
         sceKernelStartThread(thid, 0, 0);
@@ -61,8 +52,7 @@ int setup_callbacks(void)
 }
 
 // ==== Graphics setup ====
-void initGu()
-{
+void initGu() {
     sceGuInit();
 
     fbp0 = guGetStaticVramBuffer(BUFFER_WIDTH, BUFFER_HEIGHT, GU_PSM_8888);
@@ -85,21 +75,18 @@ void initGu()
     sceGuDisplay(GU_TRUE);
 }
 
-void endGu()
-{
+void endGu() {
     sceGuDisplay(GU_FALSE);
     sceGuTerm();
 }
 
-void startFrame()
-{
+void startFrame() {
     sceGuStart(GU_DIRECT, list);
-    sceGuClearColor(0xFFFFFFFF);
+    sceGuClearColor(0xFFFFFFFF); // roter Hintergrund
     sceGuClear(GU_COLOR_BUFFER_BIT);
 }
 
-void endFrame()
-{
+void endFrame() {
     sceGuFinish();
     sceGuSync(0, 0);
     sceDisplayWaitVblankStart();
@@ -107,13 +94,11 @@ void endFrame()
 }
 
 // ==== Texture loading ====
-Texture *loadTexture(const char *filename)
-{
+Texture *loadTexture(const char *filename) {
     Texture *texture = (Texture *)calloc(1, sizeof(Texture));
 
     texture->data = (unsigned int *)stbi_load(filename, &texture->width, &texture->height, NULL, STBI_rgb_alpha);
-    if (!texture->data)
-    {
+    if (!texture->data) {
         printf("Fehler: konnte Textur nicht laden: %s\n", filename);
         free(texture);
         return NULL;
@@ -123,19 +108,16 @@ Texture *loadTexture(const char *filename)
     return texture;
 }
 
-void freeTexture(Texture *texture)
-{
-    if (texture)
-    {
+void freeTexture(Texture *texture) {
+    if (texture) {
         if (texture->data)
             stbi_image_free(texture->data);
         free(texture);
     }
 }
 
-// ==== Texture drawing ====
-void drawTexture(Texture *texture, float x, float y, float w, float h)
-{
+// ==== Drawing ====
+void drawTexture(Texture *texture, float x, float y, float w, float h) {
     TextureVertex *vertices = (TextureVertex *)sceGuGetMemory(2 * sizeof(TextureVertex));
 
     vertices[0].u = 0.0f;
@@ -164,35 +146,53 @@ void drawTexture(Texture *texture, float x, float y, float w, float h)
 }
 
 // ==== Main ====
-int main()
-{
+int main() {
     setup_callbacks();
     initGu();
 
+    sceCtrlSetSamplingCycle(0);
+    sceCtrlSetSamplingMode(PSP_CTRL_MODE_ANALOG);
+
     Texture *texture = loadTexture("resources/sprites/grass.png");
-    if (!texture)
-    {
-        printf("Textur konnte nicht geladen werden!\n");
+    if (!texture) {
         endGu();
         sceKernelExitGame();
         return 0;
     }
 
-    while (running)
-    {
+    float x = (SCREEN_WIDTH - 150) / 2.0f;
+    float y = (SCREEN_HEIGHT - 150) / 2.0f;
+    float speed = 3.0f;
+
+    while (running) {
+        SceCtrlData pad;
+        sceCtrlReadBufferPositive(&pad, 1);
+
+        if(pad.Buttons != 0) {
+            // Bewegung mit Steuerkreuz
+            if (pad.Buttons & PSP_CTRL_LEFT)  x -= speed;
+            if (pad.Buttons & PSP_CTRL_RIGHT) x += speed;
+            if (pad.Buttons & PSP_CTRL_UP)    y -= speed;
+            if (pad.Buttons & PSP_CTRL_DOWN)  y += speed;
+
+            printf("x: %.2f\n", x);
+            printf("y: %.2f\n", y);
+        }
+
+
+        // Bildschirmbegrenzung
+        //if (x < 0) x = 0;
+        //if (y < 0) y = 0;
+        //if (x > SCREEN_WIDTH - texture->width) x = SCREEN_WIDTH - texture->width;
+        //if (y > SCREEN_HEIGHT - texture->height) y = SCREEN_HEIGHT - texture->height;
+
         startFrame();
-
-        drawTexture(texture,
-                    (SCREEN_WIDTH - texture->width) / 2,
-                    (SCREEN_HEIGHT - texture->height) / 2,
-                    texture->width, texture->height);
-
+        drawTexture(texture, x, y, 150, 150);
         endFrame();
     }
 
     freeTexture(texture);
     endGu();
-
     sceKernelExitGame();
     return 0;
 }
