@@ -117,24 +117,48 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named texture
+# Target rules for targets named retro_game
 
 # Build rule for target.
-texture: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 texture
-.PHONY : texture
+retro_game: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 retro_game
+.PHONY : retro_game
 
 # fast build rule for target.
-texture/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/texture.dir/build.make CMakeFiles/texture.dir/build
-.PHONY : texture/fast
+retro_game/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/build
+.PHONY : retro_game/fast
+
+enemies/enemy.obj: enemies/enemy.c.obj
+.PHONY : enemies/enemy.obj
+
+# target to build an object file
+enemies/enemy.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/enemies/enemy.c.obj
+.PHONY : enemies/enemy.c.obj
+
+enemies/enemy.i: enemies/enemy.c.i
+.PHONY : enemies/enemy.i
+
+# target to preprocess a source file
+enemies/enemy.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/enemies/enemy.c.i
+.PHONY : enemies/enemy.c.i
+
+enemies/enemy.s: enemies/enemy.c.s
+.PHONY : enemies/enemy.s
+
+# target to generate assembly for a file
+enemies/enemy.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/enemies/enemy.c.s
+.PHONY : enemies/enemy.c.s
 
 main.obj: main.c.obj
 .PHONY : main.obj
 
 # target to build an object file
 main.c.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/texture.dir/build.make CMakeFiles/texture.dir/main.c.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/main.c.obj
 .PHONY : main.c.obj
 
 main.i: main.c.i
@@ -142,7 +166,7 @@ main.i: main.c.i
 
 # target to preprocess a source file
 main.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/texture.dir/build.make CMakeFiles/texture.dir/main.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/main.c.i
 .PHONY : main.c.i
 
 main.s: main.c.s
@@ -150,8 +174,56 @@ main.s: main.c.s
 
 # target to generate assembly for a file
 main.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/texture.dir/build.make CMakeFiles/texture.dir/main.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/main.c.s
 .PHONY : main.c.s
+
+player/player.obj: player/player.c.obj
+.PHONY : player/player.obj
+
+# target to build an object file
+player/player.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/player/player.c.obj
+.PHONY : player/player.c.obj
+
+player/player.i: player/player.c.i
+.PHONY : player/player.i
+
+# target to preprocess a source file
+player/player.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/player/player.c.i
+.PHONY : player/player.c.i
+
+player/player.s: player/player.c.s
+.PHONY : player/player.s
+
+# target to generate assembly for a file
+player/player.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/player/player.c.s
+.PHONY : player/player.c.s
+
+ui/ui.obj: ui/ui.c.obj
+.PHONY : ui/ui.obj
+
+# target to build an object file
+ui/ui.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/ui/ui.c.obj
+.PHONY : ui/ui.c.obj
+
+ui/ui.i: ui/ui.c.i
+.PHONY : ui/ui.i
+
+# target to preprocess a source file
+ui/ui.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/ui/ui.c.i
+.PHONY : ui/ui.c.i
+
+ui/ui.s: ui/ui.c.s
+.PHONY : ui/ui.s
+
+# target to generate assembly for a file
+ui/ui.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/ui/ui.c.s
+.PHONY : ui/ui.c.s
 
 # Help Target
 help:
@@ -161,10 +233,19 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... texture"
+	@echo "... retro_game"
+	@echo "... enemies/enemy.obj"
+	@echo "... enemies/enemy.i"
+	@echo "... enemies/enemy.s"
 	@echo "... main.obj"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... player/player.obj"
+	@echo "... player/player.i"
+	@echo "... player/player.s"
+	@echo "... ui/ui.obj"
+	@echo "... ui/ui.i"
+	@echo "... ui/ui.s"
 .PHONY : help
 
 

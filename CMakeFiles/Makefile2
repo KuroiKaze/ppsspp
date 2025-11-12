@@ -63,11 +63,11 @@ CMAKE_BINARY_DIR = /Users/longnguyen/Downloads/ppsspp/ppsspp
 # Directory level rules for the build root directory
 
 # The main recursive "all" target.
-all: CMakeFiles/texture.dir/all
+all: CMakeFiles/retro_game.dir/all
 .PHONY : all
 
 # The main recursive "codegen" target.
-codegen: CMakeFiles/texture.dir/codegen
+codegen: CMakeFiles/retro_game.dir/codegen
 .PHONY : codegen
 
 # The main recursive "preinstall" target.
@@ -75,40 +75,40 @@ preinstall:
 .PHONY : preinstall
 
 # The main recursive "clean" target.
-clean: CMakeFiles/texture.dir/clean
+clean: CMakeFiles/retro_game.dir/clean
 .PHONY : clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/texture.dir
+# Target rules for target CMakeFiles/retro_game.dir
 
 # All Build rule for target.
-CMakeFiles/texture.dir/all:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/texture.dir/build.make CMakeFiles/texture.dir/depend
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/texture.dir/build.make CMakeFiles/texture.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/longnguyen/Downloads/ppsspp/ppsspp/CMakeFiles --progress-num=1,2 "Built target texture"
-.PHONY : CMakeFiles/texture.dir/all
+CMakeFiles/retro_game.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/longnguyen/Downloads/ppsspp/ppsspp/CMakeFiles --progress-num=1,2,3,4,5 "Built target retro_game"
+.PHONY : CMakeFiles/retro_game.dir/all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/texture.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/longnguyen/Downloads/ppsspp/ppsspp/CMakeFiles 2
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/texture.dir/all
+CMakeFiles/retro_game.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/longnguyen/Downloads/ppsspp/ppsspp/CMakeFiles 5
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/retro_game.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/longnguyen/Downloads/ppsspp/ppsspp/CMakeFiles 0
-.PHONY : CMakeFiles/texture.dir/rule
+.PHONY : CMakeFiles/retro_game.dir/rule
 
 # Convenience name for target.
-texture: CMakeFiles/texture.dir/rule
-.PHONY : texture
+retro_game: CMakeFiles/retro_game.dir/rule
+.PHONY : retro_game
 
 # codegen rule for target.
-CMakeFiles/texture.dir/codegen:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/texture.dir/build.make CMakeFiles/texture.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/longnguyen/Downloads/ppsspp/ppsspp/CMakeFiles --progress-num=1,2 "Finished codegen for target texture"
-.PHONY : CMakeFiles/texture.dir/codegen
+CMakeFiles/retro_game.dir/codegen:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/codegen
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/longnguyen/Downloads/ppsspp/ppsspp/CMakeFiles --progress-num=1,2,3,4,5 "Finished codegen for target retro_game"
+.PHONY : CMakeFiles/retro_game.dir/codegen
 
 # clean rule for target.
-CMakeFiles/texture.dir/clean:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/texture.dir/build.make CMakeFiles/texture.dir/clean
-.PHONY : CMakeFiles/texture.dir/clean
+CMakeFiles/retro_game.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/clean
+.PHONY : CMakeFiles/retro_game.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.
