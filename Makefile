@@ -129,6 +129,30 @@ retro_game/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/build
 .PHONY : retro_game/fast
 
+enemies/enemy.obj: enemies/enemy.c.obj
+.PHONY : enemies/enemy.obj
+
+# target to build an object file
+enemies/enemy.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/enemies/enemy.c.obj
+.PHONY : enemies/enemy.c.obj
+
+enemies/enemy.i: enemies/enemy.c.i
+.PHONY : enemies/enemy.i
+
+# target to preprocess a source file
+enemies/enemy.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/enemies/enemy.c.i
+.PHONY : enemies/enemy.c.i
+
+enemies/enemy.s: enemies/enemy.c.s
+.PHONY : enemies/enemy.s
+
+# target to generate assembly for a file
+enemies/enemy.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/enemies/enemy.c.s
+.PHONY : enemies/enemy.c.s
+
 main.obj: main.c.obj
 .PHONY : main.obj
 
@@ -153,29 +177,53 @@ main.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/main.c.s
 .PHONY : main.c.s
 
-player.obj: player.c.obj
-.PHONY : player.obj
+player/player.obj: player/player.c.obj
+.PHONY : player/player.obj
 
 # target to build an object file
-player.c.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/player.c.obj
-.PHONY : player.c.obj
+player/player.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/player/player.c.obj
+.PHONY : player/player.c.obj
 
-player.i: player.c.i
-.PHONY : player.i
+player/player.i: player/player.c.i
+.PHONY : player/player.i
 
 # target to preprocess a source file
-player.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/player.c.i
-.PHONY : player.c.i
+player/player.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/player/player.c.i
+.PHONY : player/player.c.i
 
-player.s: player.c.s
-.PHONY : player.s
+player/player.s: player/player.c.s
+.PHONY : player/player.s
 
 # target to generate assembly for a file
-player.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/player.c.s
-.PHONY : player.c.s
+player/player.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/player/player.c.s
+.PHONY : player/player.c.s
+
+ui/ui.obj: ui/ui.c.obj
+.PHONY : ui/ui.obj
+
+# target to build an object file
+ui/ui.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/ui/ui.c.obj
+.PHONY : ui/ui.c.obj
+
+ui/ui.i: ui/ui.c.i
+.PHONY : ui/ui.i
+
+# target to preprocess a source file
+ui/ui.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/ui/ui.c.i
+.PHONY : ui/ui.c.i
+
+ui/ui.s: ui/ui.c.s
+.PHONY : ui/ui.s
+
+# target to generate assembly for a file
+ui/ui.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/ui/ui.c.s
+.PHONY : ui/ui.c.s
 
 # Help Target
 help:
@@ -186,12 +234,18 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... retro_game"
+	@echo "... enemies/enemy.obj"
+	@echo "... enemies/enemy.i"
+	@echo "... enemies/enemy.s"
 	@echo "... main.obj"
 	@echo "... main.i"
 	@echo "... main.s"
-	@echo "... player.obj"
-	@echo "... player.i"
-	@echo "... player.s"
+	@echo "... player/player.obj"
+	@echo "... player/player.i"
+	@echo "... player/player.s"
+	@echo "... ui/ui.obj"
+	@echo "... ui/ui.i"
+	@echo "... ui/ui.s"
 .PHONY : help
 
 

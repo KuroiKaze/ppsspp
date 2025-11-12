@@ -1,5 +1,6 @@
-CMakeFiles/retro_game.dir/main.c.obj: \
- /Users/longnguyen/Downloads/ppsspp/ppsspp/main.c \
+CMakeFiles/retro_game.dir/enemies/enemy.c.obj: \
+ /Users/longnguyen/Downloads/ppsspp/ppsspp/enemies/enemy.c \
+ /Users/longnguyen/Downloads/ppsspp/ppsspp/enemies/enemy.h \
  /Users/longnguyen/pspdev/psp/include/SDL2/SDL.h \
  /Users/longnguyen/pspdev/psp/include/SDL2/SDL_main.h \
  /Users/longnguyen/pspdev/psp/include/SDL2/SDL_stdinc.h \
@@ -102,39 +103,4 @@ CMakeFiles/retro_game.dir/main.c.obj: \
  /Users/longnguyen/pspdev/psp/include/SDL2/SDL_locale.h \
  /Users/longnguyen/pspdev/psp/include/SDL2/SDL_misc.h \
  /Users/longnguyen/pspdev/psp/include/SDL2/SDL_image.h \
- /Users/longnguyen/pspdev/psp/include/SDL2/SDL.h \
- /Users/longnguyen/pspdev/psp/sdk/include/pspkernel.h \
- /Users/longnguyen/pspdev/psp/sdk/include/pspuser.h \
- /Users/longnguyen/pspdev/psp/sdk/include/psptypes.h \
- /Users/longnguyen/pspdev/psp/sdk/include/pspkerneltypes.h \
- /Users/longnguyen/pspdev/psp/sdk/include/pspiofilemgr.h \
- /Users/longnguyen/pspdev/psp/sdk/include/pspiofilemgr_fcntl.h \
- /Users/longnguyen/pspdev/psp/sdk/include/pspiofilemgr_stat.h \
- /Users/longnguyen/pspdev/psp/sdk/include/pspiofilemgr_dirent.h \
- /Users/longnguyen/pspdev/psp/sdk/include/pspiofilemgr_devctl.h \
- /Users/longnguyen/pspdev/psp/sdk/include/psploadexec.h \
- /Users/longnguyen/pspdev/psp/sdk/include/pspmoduleinfo.h \
- /Users/longnguyen/pspdev/psp/sdk/include/pspmodulemgr.h \
- /Users/longnguyen/pspdev/psp/sdk/include/pspsysmem.h \
- /Users/longnguyen/pspdev/psp/sdk/include/pspthreadman.h \
- /Users/longnguyen/pspdev/psp/sdk/include/pspdebug.h \
- /Users/longnguyen/pspdev/psp/sdk/include/psputils.h \
- /Users/longnguyen/pspdev/psp/include/sys/time.h \
- /Users/longnguyen/pspdev/psp/include/time.h \
- /Users/longnguyen/pspdev/psp/include/machine/time.h \
- /Users/longnguyen/pspdev/psp/include/machine/_time.h \
- /Users/longnguyen/pspdev/psp/sdk/include/pspkerror.h \
- /Users/longnguyen/pspdev/psp/sdk/include/pspstdio.h \
- /Users/longnguyen/pspdev/psp/sdk/include/pspintrman.h \
- /Users/longnguyen/pspdev/psp/sdk/include/pspiofilemgr_kernel.h \
- /Users/longnguyen/pspdev/psp/sdk/include/psploadcore.h \
- /Users/longnguyen/pspdev/psp/sdk/include/pspstdio_kernel.h \
- /Users/longnguyen/pspdev/psp/sdk/include/pspsysreg.h \
- /Users/longnguyen/pspdev/psp/sdk/include/pspkdebug.h \
- /Users/longnguyen/pspdev/psp/sdk/include/pspintrman_kernel.h \
- /Users/longnguyen/pspdev/psp/sdk/include/pspmodulemgr_kernel.h \
- /Users/longnguyen/pspdev/psp/sdk/include/pspdisplay.h \
- /Users/longnguyen/pspdev/psp/sdk/include/pspctrl.h \
- /Users/longnguyen/Downloads/ppsspp/ppsspp/player/player.h \
- /Users/longnguyen/Downloads/ppsspp/ppsspp/enemies/enemy.h \
- /Users/longnguyen/Downloads/ppsspp/ppsspp/ui/ui.h
+ /Users/longnguyen/pspdev/psp/include/SDL2/SDL.h

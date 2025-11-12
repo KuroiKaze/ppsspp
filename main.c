@@ -6,16 +6,18 @@
 #include <pspctrl.h>
 #include <stdio.h>
 #include <stdlib.h> 
-#include "player.h"
+#include "player/player.h"
+#include "enemies/enemy.h"
+#include "ui/ui.h"
 
-#define ANIMATION_SPEED 100  // Zeit in Millisekunden pro Frame
 #define SCREEN_WIDTH 480
 #define SCREEN_HEIGHT 272
+#define TARGET_FPS 60 // Hinzugefügt für Konsistenz mit PSP-Framerate
 
 // Globale Laufvariable, wird vom Callback-Thread gesetzt
 int running = 1;
 
-// vordeklaration der Hilfsfunktion
+// Vordeklaration der Hilfsfunktion (definiert am Ende)
 SDL_Texture *load_texture(SDL_Renderer *renderer, const char *path);
 
 // --- PSP Callback Funktionen ---
@@ -42,28 +44,22 @@ int setup_callbacks(void) {
 int main(int argc, char *argv[]) {
     SDL_Window * window = NULL;
     SDL_Renderer * renderer = NULL;
+    Player player = {0}; 
+    Enemy mummy_enemy = {0};
     
-    // necessary PSP initializations
+    // Initialisierungen
     setup_callbacks();
     sceCtrlSetSamplingCycle(0);
     sceCtrlSetSamplingMode(PSP_CTRL_MODE_ANALOG);
 
-    // 3. SDL Initialisierung
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) < 0) {
-        fprintf(stderr, "SDL Init Error: %s\n", SDL_GetError());
-        return 1;
-    }
-    if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
-        fprintf(stderr, "IMG Init Error: %s\n", IMG_GetError());
-        SDL_Quit();
-        return 1;
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) < 0 || !(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
+        fprintf(stderr, "SDL/IMG Init Error.\n");
+        goto cleanup;
     }
 
-    // 4. Fenster und Renderer erstellen
     window = SDL_CreateWindow("retro_game", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
     if (!window) goto cleanup;
 
-    // Versuche Hardware-Renderer, Fallback auf Software, um Linker-Fehler zu umgehen
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (!renderer) {
         fprintf(stderr, "Hardware-Renderer fehlgeschlagen. Versuch mit Software-Renderer...\n");
@@ -71,16 +67,22 @@ int main(int argc, char *argv[]) {
         if (!renderer) goto cleanup;
     }
 
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // bg
-    
-    Uint32 last_time = SDL_GetTicks();
-    int current_idle_frame = 0;
-    int current_run_frame = 0;
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
-    Player player = player_init(renderer);
-    SceCtrlData pad;
+    player = player_init(renderer); 
+    mummy_enemy = enemy_init(renderer, 350, 100); 
+
+    if (!player.idle_frames[0] || !player.attack_frames[0]) {
+        fprintf(stderr, "Fataler Fehler: Spieler-Ressourcen konnten nicht geladen werden. Beende das Spiel.\n");
+        goto cleanup; 
+    }
+    if (!mummy_enemy.idle_frames[0]) {
+        fprintf(stderr, "Fataler Fehler: Gegner-Ressourcen konnten nicht geladen werden. Beende das Spiel.\n");
+        goto cleanup; 
+    }
     
-    // --- Hauptschleife (BEGINN) ---
+    SceCtrlData pad;
+
     while (running) { 
         SDL_Event event;
         while (SDL_PollEvent(&event)) { if (event.type == SDL_QUIT) { running = 0; } } 
@@ -88,18 +90,53 @@ int main(int argc, char *argv[]) {
         sceCtrlReadBufferPositive(&pad, 1);
         if (pad.Buttons & PSP_CTRL_START || pad.Buttons & PSP_CTRL_SELECT) running = 0;
 
-        // --- Logik-Update ---
         int is_moving = player_handle_input(&player, &pad);
         player_update_animation(&player, is_moving);
+        player_update_attack(&player);
+        enemy_update_animation(&mummy_enemy);
 
-        // --- Rendering ---
+        if (player.attack_rect.w > 0) { 
+            if (mummy_enemy.health > 0 && SDL_HasIntersection(&player.attack_rect, &mummy_enemy.rect)) {
+                enemy_decrease_health(&mummy_enemy, 5);
+                fprintf(stderr, "Attack Hit! Enemy Health: %d\n", mummy_enemy.health);
+                player.attack_rect = (SDL_Rect){0, 0, 0, 0}; 
+            }
+        }
+        
+        if (mummy_enemy.health > 0 && SDL_HasIntersection(&player.rect, &mummy_enemy.rect)) {
+            player_decrease_health(&player, 8);
+            
+            if (player.health > 0) {
+                 if (player.flip_direction == SDL_FLIP_HORIZONTAL) {
+                    player.rect.x += 10; 
+                } else {
+                    player.rect.x -= 10; 
+                }
+            }
+            
+            if (player.health <= 0) {
+                running = 0; 
+            }
+        }
+        
+        if (mummy_enemy.health <= 0) {
+            // TODO: Später hier Logik für Punkte, Item-Drop etc.
+        }
+
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer); 
+
+        enemy_render(renderer, &mummy_enemy); 
         player_render(renderer, &player, is_moving);
+        
+        ui_render_health_bar(renderer, player.health);
+        
         SDL_RenderPresent(renderer);
     }
     
 cleanup:
-    player_cleanup(&player); // Spieler-Assets freigeben
+    enemy_cleanup(&mummy_enemy);
+    player_cleanup(&player); 
     if (renderer) SDL_DestroyRenderer(renderer);
     if (window) SDL_DestroyWindow(window);
     IMG_Quit();
@@ -107,9 +144,7 @@ cleanup:
     sceKernelExitGame(); 
     return 0;
 }
-// ... (restlicher Code) ...
 
-// Hilfsfunktion zum Laden einer einzelnen Textur
 SDL_Texture *load_texture(SDL_Renderer *renderer, const char *path) {
     SDL_Surface *pixels = IMG_Load(path);
     if (!pixels) {
