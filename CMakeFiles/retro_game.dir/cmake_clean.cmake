@@ -1,6 +1,8 @@
 file(REMOVE_RECURSE
   "CMakeFiles/retro_game.dir/main.c.obj"
   "CMakeFiles/retro_game.dir/main.c.obj.d"
+  "CMakeFiles/retro_game.dir/player.c.obj"
+  "CMakeFiles/retro_game.dir/player.c.obj.d"
   "retro_game"
   "retro_game.pdb"
 )

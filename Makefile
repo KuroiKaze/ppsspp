@@ -117,24 +117,24 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named sdl2-image
+# Target rules for targets named retro_game
 
 # Build rule for target.
-sdl2-image: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 sdl2-image
-.PHONY : sdl2-image
+retro_game: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 retro_game
+.PHONY : retro_game
 
 # fast build rule for target.
-sdl2-image/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sdl2-image.dir/build.make CMakeFiles/sdl2-image.dir/build
-.PHONY : sdl2-image/fast
+retro_game/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/build
+.PHONY : retro_game/fast
 
 main.obj: main.c.obj
 .PHONY : main.obj
 
 # target to build an object file
 main.c.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sdl2-image.dir/build.make CMakeFiles/sdl2-image.dir/main.c.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/main.c.obj
 .PHONY : main.c.obj
 
 main.i: main.c.i
@@ -142,7 +142,7 @@ main.i: main.c.i
 
 # target to preprocess a source file
 main.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sdl2-image.dir/build.make CMakeFiles/sdl2-image.dir/main.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/main.c.i
 .PHONY : main.c.i
 
 main.s: main.c.s
@@ -150,8 +150,32 @@ main.s: main.c.s
 
 # target to generate assembly for a file
 main.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sdl2-image.dir/build.make CMakeFiles/sdl2-image.dir/main.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/main.c.s
 .PHONY : main.c.s
+
+player.obj: player.c.obj
+.PHONY : player.obj
+
+# target to build an object file
+player.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/player.c.obj
+.PHONY : player.c.obj
+
+player.i: player.c.i
+.PHONY : player.i
+
+# target to preprocess a source file
+player.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/player.c.i
+.PHONY : player.c.i
+
+player.s: player.c.s
+.PHONY : player.s
+
+# target to generate assembly for a file
+player.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/player.c.s
+.PHONY : player.c.s
 
 # Help Target
 help:
@@ -161,10 +185,13 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... sdl2-image"
+	@echo "... retro_game"
 	@echo "... main.obj"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... player.obj"
+	@echo "... player.i"
+	@echo "... player.s"
 .PHONY : help
 
 

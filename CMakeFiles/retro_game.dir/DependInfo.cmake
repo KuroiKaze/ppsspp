@@ -9,6 +9,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/Users/longnguyen/Downloads/ppsspp/ppsspp/main.c" "CMakeFiles/retro_game.dir/main.c.obj" "gcc" "CMakeFiles/retro_game.dir/main.c.obj.d"
+  "/Users/longnguyen/Downloads/ppsspp/ppsspp/player.c" "CMakeFiles/retro_game.dir/player.c.obj" "gcc" "CMakeFiles/retro_game.dir/player.c.obj.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

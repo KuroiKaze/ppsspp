@@ -86,17 +86,33 @@ CMakeFiles/retro_game.dir/main.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/retro_game.dir/main.c.s"
 	/Users/longnguyen/pspdev/bin/psp-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /Users/longnguyen/Downloads/ppsspp/ppsspp/main.c -o CMakeFiles/retro_game.dir/main.c.s
 
+CMakeFiles/retro_game.dir/player.c.obj: CMakeFiles/retro_game.dir/flags.make
+CMakeFiles/retro_game.dir/player.c.obj: player.c
+CMakeFiles/retro_game.dir/player.c.obj: CMakeFiles/retro_game.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/longnguyen/Downloads/ppsspp/ppsspp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/retro_game.dir/player.c.obj"
+	/Users/longnguyen/pspdev/bin/psp-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/retro_game.dir/player.c.obj -MF CMakeFiles/retro_game.dir/player.c.obj.d -o CMakeFiles/retro_game.dir/player.c.obj -c /Users/longnguyen/Downloads/ppsspp/ppsspp/player.c
+
+CMakeFiles/retro_game.dir/player.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/retro_game.dir/player.c.i"
+	/Users/longnguyen/pspdev/bin/psp-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /Users/longnguyen/Downloads/ppsspp/ppsspp/player.c > CMakeFiles/retro_game.dir/player.c.i
+
+CMakeFiles/retro_game.dir/player.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/retro_game.dir/player.c.s"
+	/Users/longnguyen/pspdev/bin/psp-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /Users/longnguyen/Downloads/ppsspp/ppsspp/player.c -o CMakeFiles/retro_game.dir/player.c.s
+
 # Object files for target retro_game
 retro_game_OBJECTS = \
-"CMakeFiles/retro_game.dir/main.c.obj"
+"CMakeFiles/retro_game.dir/main.c.obj" \
+"CMakeFiles/retro_game.dir/player.c.obj"
 
 # External object files for target retro_game
 retro_game_EXTERNAL_OBJECTS =
 
 retro_game: CMakeFiles/retro_game.dir/main.c.obj
+retro_game: CMakeFiles/retro_game.dir/player.c.obj
 retro_game: CMakeFiles/retro_game.dir/build.make
 retro_game: CMakeFiles/retro_game.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/longnguyen/Downloads/ppsspp/ppsspp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking C executable retro_game"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/longnguyen/Downloads/ppsspp/ppsspp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking C executable retro_game"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/retro_game.dir/link.txt --verbose=$(VERBOSE)
 	/opt/homebrew/bin/cmake -E cmake_echo_color --cyan Not\ stripping\ binary\ for\ target\ retro_game,\ build\ type\ is\ .
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold "Calling psp-fixup-imports for target retro_game"

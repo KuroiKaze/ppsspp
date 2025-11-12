@@ -26,6 +26,9 @@ set(CMAKE_MAKEFILE_DEPENDS
   "/opt/homebrew/share/cmake/Modules/Compiler/GNU-C.cmake"
   "/opt/homebrew/share/cmake/Modules/Compiler/GNU-CXX.cmake"
   "/opt/homebrew/share/cmake/Modules/Compiler/GNU.cmake"
+  "/opt/homebrew/share/cmake/Modules/FindPackageHandleStandardArgs.cmake"
+  "/opt/homebrew/share/cmake/Modules/FindPackageMessage.cmake"
+  "/opt/homebrew/share/cmake/Modules/FindPkgConfig.cmake"
   "/opt/homebrew/share/cmake/Modules/Internal/CMakeCLinkerInformation.cmake"
   "/opt/homebrew/share/cmake/Modules/Internal/CMakeCXXLinkerInformation.cmake"
   "/opt/homebrew/share/cmake/Modules/Internal/CMakeCommonLinkerInformation.cmake"
@@ -45,5 +48,5 @@ set(CMAKE_MAKEFILE_PRODUCTS
 
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
-  "CMakeFiles/texture.dir/DependInfo.cmake"
+  "CMakeFiles/retro_game.dir/DependInfo.cmake"
   )

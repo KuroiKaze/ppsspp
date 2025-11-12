@@ -1,24 +1,54 @@
 #include <SDL.h>
 #include <SDL_image.h>
-#include <stdio.h>
-#include <stdlib.h> // Für sprintf
 
-// --- WICHTIG: KONSTANTEN MÜSSEN HIER DEKLARIERT WERDEN ---
-#define FRAME_COUNT 4        // ANPASSEN: Tatsächliche Anzahl der Frame-Dateien (z.B. 6)
-#define ANIMATION_SPEED 100  // Zeit in Millisekunden pro Frame (10 FPS)
+#include <pspkernel.h>
+#include <pspdisplay.h>
+#include <pspctrl.h>
+#include <stdio.h>
+#include <stdlib.h> 
+#include "player.h"
+
+#define ANIMATION_SPEED 100  // Zeit in Millisekunden pro Frame
 #define SCREEN_WIDTH 480
 #define SCREEN_HEIGHT 272
-// -----------------------------------------------------------
 
-// Prototyp der Ladefunktion (Muss vor main() stehen)
+// Globale Laufvariable, wird vom Callback-Thread gesetzt
+int running = 1;
+
+// vordeklaration der Hilfsfunktion
 SDL_Texture *load_texture(SDL_Renderer *renderer, const char *path);
 
+// --- PSP Callback Funktionen ---
+int exit_callback(int arg1, int arg2, void *common) {
+    running = 0;
+    return 0;
+}
+
+int callback_thread(SceSize args, void *argp) {
+    int cbid = sceKernelCreateCallback("Exit Callback", exit_callback, NULL);
+    sceKernelRegisterExitCallback(cbid);
+    sceKernelSleepThreadCB();
+    return 0;
+}
+
+int setup_callbacks(void) {
+    int thid = sceKernelCreateThread("callback_thread", callback_thread, 0x11, 0xFA0, 0, 0);
+    if (thid >= 0)
+        sceKernelStartThread(thid, 0, 0);
+    return thid;
+}
+
+// --- Hauptprogramm ---
 int main(int argc, char *argv[]) {
     SDL_Window * window = NULL;
     SDL_Renderer * renderer = NULL;
-    // SDL_Texture * sprite = NULL; // Nicht benötigt, da wir die Liste verwenden
+    
+    // necessary PSP initializations
+    setup_callbacks();
+    sceCtrlSetSamplingCycle(0);
+    sceCtrlSetSamplingMode(PSP_CTRL_MODE_ANALOG);
 
-    // --- Initialisierung ---
+    // 3. SDL Initialisierung
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) < 0) {
         fprintf(stderr, "SDL Init Error: %s\n", SDL_GetError());
         return 1;
@@ -29,107 +59,55 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    window = SDL_CreateWindow("Texture List Animation", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
+    // 4. Fenster und Renderer erstellen
+    window = SDL_CreateWindow("retro_game", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
     if (!window) goto cleanup;
 
+    // Versuche Hardware-Renderer, Fallback auf Software, um Linker-Fehler zu umgehen
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-    if (!renderer) goto cleanup;
-
-    // Weißen Hintergrund für RenderClear setzen
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); 
-
-    // --- 1. Texture-Liste laden ---
-    SDL_Texture *idle_frames[FRAME_COUNT] = { NULL }; 
-    const char *base_path = "resources/Gothicvania Collection Files/Assets/Characters/PLAYABLE CHARACTERS/Cemetery Hero/Base/Sprites/hero-idle/hero-idle-";
-    char path_buffer[256];
-
-    for (int i = 0; i < FRAME_COUNT; i++) {
-        // Erzeugt den Dateinamen (z.B. .../hero-idle-1.png bis .../hero-idle-6.png)
-        sprintf(path_buffer, "%s%d.png", base_path, i + 1); 
-        
-        idle_frames[i] = load_texture(renderer, path_buffer);
-        if (!idle_frames[i]) {
-            fprintf(stderr, "Fehler: Frame %d konnte nicht geladen werden.\n", i + 1);
-            goto cleanup;
-        }
+    if (!renderer) {
+        fprintf(stderr, "Hardware-Renderer fehlgeschlagen. Versuch mit Software-Renderer...\n");
+        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE | SDL_RENDERER_PRESENTVSYNC);
+        if (!renderer) goto cleanup;
     }
 
-    // --- 2. Positions-Setup ---
-    SDL_Rect sprite_rect = { 0 }; 
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // bg
     
-    // Dimensionen vom ersten Frame abfragen
-    SDL_QueryTexture(idle_frames[0], NULL, NULL, &sprite_rect.w, &sprite_rect.h);
-    
-    // Skalierung: Macht den Sprite doppelt so groß (Beispiel)
-    sprite_rect.w *= 2; 
-    sprite_rect.h *= 2;
-
-    // Position mittig setzen
-    sprite_rect.x = SCREEN_WIDTH/2 - sprite_rect.w/2;
-    sprite_rect.y = SCREEN_HEIGHT/2 - sprite_rect.h/2;
-    
-    // --- 3. Animations-Steuerung ---
     Uint32 last_time = SDL_GetTicks();
-    int current_frame = 0;
-    int running = 1;
-    SDL_Event event;
+    int current_idle_frame = 0;
+    int current_run_frame = 0;
+
+    Player player = player_init(renderer);
+    SceCtrlData pad;
     
-
-    // --- Hauptschleife ---
+    // --- Hauptschleife (BEGINN) ---
     while (running) { 
-        // Process input
-        while (SDL_PollEvent(&event)) { // <-- Die Klammer war hier falsch platziert
-            switch (event.type) {
-                case SDL_QUIT:
-                    running = 0;
-                    break;
-                case SDL_CONTROLLERDEVICEADDED:
-                    SDL_GameControllerOpen(event.cdevice.which);
-                    break;
-                case SDL_CONTROLLERBUTTONDOWN:
-                    if(event.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
-                        running = 0;
-                    }
-                    break;
-            }
-        } // Ende der while(SDL_PollEvent) Schleife
-        
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) { if (event.type == SDL_QUIT) { running = 0; } } 
 
-        // --- Animations-Update (Frame-Wechsel) ---
-        Uint32 current_time = SDL_GetTicks();
-        if (current_time > last_time + ANIMATION_SPEED) {
-            // Nächsten Frame in der Liste auswählen
-            current_frame = (current_frame + 1) % FRAME_COUNT;
-            last_time = current_time;
-        }
+        sceCtrlReadBufferPositive(&pad, 1);
+        if (pad.Buttons & PSP_CTRL_START || pad.Buttons & PSP_CTRL_SELECT) running = 0;
+
+        // --- Logik-Update ---
+        int is_moving = player_handle_input(&player, &pad);
+        player_update_animation(&player, is_moving);
 
         // --- Rendering ---
-        
-        // Löscht den Bildschirm mit der DrawColor (Weiß)
         SDL_RenderClear(renderer); 
-
-        // Zeichnen des aktuellen Frames
-        SDL_RenderCopy(renderer, idle_frames[current_frame], NULL, &sprite_rect);
-
-        // Aktualisiert den Bildschirm
+        player_render(renderer, &player, is_moving);
         SDL_RenderPresent(renderer);
     }
     
-// --- Aufräumen ---
 cleanup:
-    // ALLE geladenen Texturen freigeben
-    for (int i = 0; i < FRAME_COUNT; i++) {
-        if (idle_frames[i]) {
-            SDL_DestroyTexture(idle_frames[i]);
-        }
-    }
+    player_cleanup(&player); // Spieler-Assets freigeben
     if (renderer) SDL_DestroyRenderer(renderer);
     if (window) SDL_DestroyWindow(window);
     IMG_Quit();
     SDL_Quit();
-
+    sceKernelExitGame(); 
     return 0;
 }
+// ... (restlicher Code) ...
 
 // Hilfsfunktion zum Laden einer einzelnen Textur
 SDL_Texture *load_texture(SDL_Renderer *renderer, const char *path) {
