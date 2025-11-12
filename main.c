@@ -1,198 +1,147 @@
-#include <pspkernel.h>
-#include <pspdisplay.h>
-#include <pspctrl.h>
-#include <pspgu.h>
-#include <stdlib.h>
+#include <SDL.h>
+#include <SDL_image.h>
 #include <stdio.h>
+#include <stdlib.h> // Für sprintf
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-
-PSP_MODULE_INFO("Sprite_Move", 0, 1, 0);
-PSP_MAIN_THREAD_ATTR(THREAD_ATTR_USER);
-
-#define BUFFER_WIDTH 512
-#define BUFFER_HEIGHT 272
+// --- WICHTIG: KONSTANTEN MÜSSEN HIER DEKLARIERT WERDEN ---
+#define FRAME_COUNT 4        // ANPASSEN: Tatsächliche Anzahl der Frame-Dateien (z.B. 6)
+#define ANIMATION_SPEED 100  // Zeit in Millisekunden pro Frame (10 FPS)
 #define SCREEN_WIDTH 480
 #define SCREEN_HEIGHT 272
+// -----------------------------------------------------------
 
-typedef struct {
-    float u, v;
-    unsigned int colour;
-    float x, y, z;
-} TextureVertex;
+// Prototyp der Ladefunktion (Muss vor main() stehen)
+SDL_Texture *load_texture(SDL_Renderer *renderer, const char *path);
 
-typedef struct {
-    int width, height;
-    unsigned int *data;
-} Texture;
+int main(int argc, char *argv[]) {
+    SDL_Window * window = NULL;
+    SDL_Renderer * renderer = NULL;
+    // SDL_Texture * sprite = NULL; // Nicht benötigt, da wir die Liste verwenden
 
-static unsigned int __attribute__((aligned(16))) list[262144];
-int running = 1;
-void *fbp0, *fbp1;
-
-// ==== Exit Callback ====
-int exit_callback(int arg1, int arg2, void *common) {
-    running = 0;
-    return 0;
-}
-
-int callback_thread(SceSize args, void *argp) {
-    int cbid = sceKernelCreateCallback("Exit Callback", exit_callback, NULL);
-    sceKernelRegisterExitCallback(cbid);
-    sceKernelSleepThreadCB();
-    return 0;
-}
-
-int setup_callbacks(void) {
-    int thid = sceKernelCreateThread("callback_thread", callback_thread, 0x11, 0xFA0, 0, 0);
-    if (thid >= 0)
-        sceKernelStartThread(thid, 0, 0);
-    return thid;
-}
-
-// ==== Graphics setup ====
-void initGu() {
-    sceGuInit();
-
-    fbp0 = guGetStaticVramBuffer(BUFFER_WIDTH, BUFFER_HEIGHT, GU_PSM_8888);
-    fbp1 = guGetStaticVramBuffer(BUFFER_WIDTH, BUFFER_HEIGHT, GU_PSM_8888);
-
-    sceGuStart(GU_DIRECT, list);
-    sceGuDrawBuffer(GU_PSM_8888, fbp0, BUFFER_WIDTH);
-    sceGuDispBuffer(SCREEN_WIDTH, SCREEN_HEIGHT, fbp1, BUFFER_WIDTH);
-    sceGuDepthBuffer(fbp0, 0);
-
-    sceGuDisable(GU_DEPTH_TEST);
-    sceGuOffset(2048 - (SCREEN_WIDTH / 2), 2048 - (SCREEN_HEIGHT / 2));
-    sceGuViewport(2048, 2048, SCREEN_WIDTH, SCREEN_HEIGHT);
-    sceGuScissor(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    sceGuEnable(GU_SCISSOR_TEST);
-
-    sceGuFinish();
-    sceGuSync(0, 0);
-    sceDisplayWaitVblankStart();
-    sceGuDisplay(GU_TRUE);
-}
-
-void endGu() {
-    sceGuDisplay(GU_FALSE);
-    sceGuTerm();
-}
-
-void startFrame() {
-    sceGuStart(GU_DIRECT, list);
-    sceGuClearColor(0xFFFFFFFF); // roter Hintergrund
-    sceGuClear(GU_COLOR_BUFFER_BIT);
-}
-
-void endFrame() {
-    sceGuFinish();
-    sceGuSync(0, 0);
-    sceDisplayWaitVblankStart();
-    sceGuSwapBuffers();
-}
-
-// ==== Texture loading ====
-Texture *loadTexture(const char *filename) {
-    Texture *texture = (Texture *)calloc(1, sizeof(Texture));
-
-    texture->data = (unsigned int *)stbi_load(filename, &texture->width, &texture->height, NULL, STBI_rgb_alpha);
-    if (!texture->data) {
-        printf("Fehler: konnte Textur nicht laden: %s\n", filename);
-        free(texture);
-        return NULL;
+    // --- Initialisierung ---
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) < 0) {
+        fprintf(stderr, "SDL Init Error: %s\n", SDL_GetError());
+        return 1;
+    }
+    if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
+        fprintf(stderr, "IMG Init Error: %s\n", IMG_GetError());
+        SDL_Quit();
+        return 1;
     }
 
-    sceKernelDcacheWritebackInvalidateAll();
-    return texture;
-}
+    window = SDL_CreateWindow("Texture List Animation", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
+    if (!window) goto cleanup;
 
-void freeTexture(Texture *texture) {
-    if (texture) {
-        if (texture->data)
-            stbi_image_free(texture->data);
-        free(texture);
-    }
-}
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    if (!renderer) goto cleanup;
 
-// ==== Drawing ====
-void drawTexture(Texture *texture, float x, float y, float w, float h) {
-    TextureVertex *vertices = (TextureVertex *)sceGuGetMemory(2 * sizeof(TextureVertex));
+    // Weißen Hintergrund für RenderClear setzen
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); 
 
-    vertices[0].u = 0.0f;
-    vertices[0].v = 0.0f;
-    vertices[0].colour = 0xFFFFFFFF;
-    vertices[0].x = x;
-    vertices[0].y = y;
-    vertices[0].z = 0.0f;
+    // --- 1. Texture-Liste laden ---
+    SDL_Texture *idle_frames[FRAME_COUNT] = { NULL }; 
+    const char *base_path = "resources/Gothicvania Collection Files/Assets/Characters/PLAYABLE CHARACTERS/Cemetery Hero/Base/Sprites/hero-idle/hero-idle-";
+    char path_buffer[256];
 
-    vertices[1].u = (float)texture->width;
-    vertices[1].v = (float)texture->height;
-    vertices[1].colour = 0xFFFFFFFF;
-    vertices[1].x = x + w;
-    vertices[1].y = y + h;
-    vertices[1].z = 0.0f;
-
-    sceGuTexMode(GU_PSM_8888, 0, 0, GU_FALSE);
-    sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGB);
-    sceGuTexImage(0, texture->width, texture->height, texture->width, texture->data);
-
-    sceGuEnable(GU_TEXTURE_2D);
-    sceGuDrawArray(GU_SPRITES,
-                   GU_TEXTURE_32BITF | GU_COLOR_8888 | GU_VERTEX_32BITF | GU_TRANSFORM_2D,
-                   2, 0, vertices);
-    sceGuDisable(GU_TEXTURE_2D);
-}
-
-// ==== Main ====
-int main() {
-    setup_callbacks();
-    initGu();
-
-    sceCtrlSetSamplingCycle(0);
-    sceCtrlSetSamplingMode(PSP_CTRL_MODE_ANALOG);
-
-    Texture *texture = loadTexture("resources/sprites/grass.png");
-    if (!texture) {
-        endGu();
-        sceKernelExitGame();
-        return 0;
+    for (int i = 0; i < FRAME_COUNT; i++) {
+        // Erzeugt den Dateinamen (z.B. .../hero-idle-1.png bis .../hero-idle-6.png)
+        sprintf(path_buffer, "%s%d.png", base_path, i + 1); 
+        
+        idle_frames[i] = load_texture(renderer, path_buffer);
+        if (!idle_frames[i]) {
+            fprintf(stderr, "Fehler: Frame %d konnte nicht geladen werden.\n", i + 1);
+            goto cleanup;
+        }
     }
 
-    float x = (SCREEN_WIDTH - 150) / 2.0f;
-    float y = (SCREEN_HEIGHT - 150) / 2.0f;
-    float speed = 3.0f;
+    // --- 2. Positions-Setup ---
+    SDL_Rect sprite_rect = { 0 }; 
+    
+    // Dimensionen vom ersten Frame abfragen
+    SDL_QueryTexture(idle_frames[0], NULL, NULL, &sprite_rect.w, &sprite_rect.h);
+    
+    // Skalierung: Macht den Sprite doppelt so groß (Beispiel)
+    sprite_rect.w *= 2; 
+    sprite_rect.h *= 2;
 
-    while (running) {
-        SceCtrlData pad;
-        sceCtrlReadBufferPositive(&pad, 1);
+    // Position mittig setzen
+    sprite_rect.x = SCREEN_WIDTH/2 - sprite_rect.w/2;
+    sprite_rect.y = SCREEN_HEIGHT/2 - sprite_rect.h/2;
+    
+    // --- 3. Animations-Steuerung ---
+    Uint32 last_time = SDL_GetTicks();
+    int current_frame = 0;
+    int running = 1;
+    SDL_Event event;
+    
 
-        if(pad.Buttons != 0) {
-            // Bewegung mit Steuerkreuz
-            if (pad.Buttons & PSP_CTRL_LEFT)  x -= speed;
-            if (pad.Buttons & PSP_CTRL_RIGHT) x += speed;
-            if (pad.Buttons & PSP_CTRL_UP)    y -= speed;
-            if (pad.Buttons & PSP_CTRL_DOWN)  y += speed;
+    // --- Hauptschleife ---
+    while (running) { 
+        // Process input
+        while (SDL_PollEvent(&event)) { // <-- Die Klammer war hier falsch platziert
+            switch (event.type) {
+                case SDL_QUIT:
+                    running = 0;
+                    break;
+                case SDL_CONTROLLERDEVICEADDED:
+                    SDL_GameControllerOpen(event.cdevice.which);
+                    break;
+                case SDL_CONTROLLERBUTTONDOWN:
+                    if(event.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
+                        running = 0;
+                    }
+                    break;
+            }
+        } // Ende der while(SDL_PollEvent) Schleife
+        
 
-            printf("x: %.2f\n", x);
-            printf("y: %.2f\n", y);
+        // --- Animations-Update (Frame-Wechsel) ---
+        Uint32 current_time = SDL_GetTicks();
+        if (current_time > last_time + ANIMATION_SPEED) {
+            // Nächsten Frame in der Liste auswählen
+            current_frame = (current_frame + 1) % FRAME_COUNT;
+            last_time = current_time;
         }
 
+        // --- Rendering ---
+        
+        // Löscht den Bildschirm mit der DrawColor (Weiß)
+        SDL_RenderClear(renderer); 
 
-        // Bildschirmbegrenzung
-        //if (x < 0) x = 0;
-        //if (y < 0) y = 0;
-        //if (x > SCREEN_WIDTH - texture->width) x = SCREEN_WIDTH - texture->width;
-        //if (y > SCREEN_HEIGHT - texture->height) y = SCREEN_HEIGHT - texture->height;
+        // Zeichnen des aktuellen Frames
+        SDL_RenderCopy(renderer, idle_frames[current_frame], NULL, &sprite_rect);
 
-        startFrame();
-        drawTexture(texture, x, y, 150, 150);
-        endFrame();
+        // Aktualisiert den Bildschirm
+        SDL_RenderPresent(renderer);
     }
+    
+// --- Aufräumen ---
+cleanup:
+    // ALLE geladenen Texturen freigeben
+    for (int i = 0; i < FRAME_COUNT; i++) {
+        if (idle_frames[i]) {
+            SDL_DestroyTexture(idle_frames[i]);
+        }
+    }
+    if (renderer) SDL_DestroyRenderer(renderer);
+    if (window) SDL_DestroyWindow(window);
+    IMG_Quit();
+    SDL_Quit();
 
-    freeTexture(texture);
-    endGu();
-    sceKernelExitGame();
     return 0;
+}
+
+// Hilfsfunktion zum Laden einer einzelnen Textur
+SDL_Texture *load_texture(SDL_Renderer *renderer, const char *path) {
+    SDL_Surface *pixels = IMG_Load(path);
+    if (!pixels) {
+        fprintf(stderr, "IMG_Load Error (%s): %s\n", path, IMG_GetError());
+        return NULL;
+    }
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, pixels);
+    SDL_FreeSurface(pixels);
+    if (!texture) {
+        fprintf(stderr, "SDL_CreateTextureFromSurface Error: %s\n", SDL_GetError());
+    }
+    return texture;
 }

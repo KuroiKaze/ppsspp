@@ -148,7 +148,7 @@ CMAKE_PROJECT_DESCRIPTION:STATIC=
 CMAKE_PROJECT_HOMEPAGE_URL:STATIC=
 
 //Value Computed by CMake
-CMAKE_PROJECT_NAME:STATIC=texture
+CMAKE_PROJECT_NAME:STATIC=sdl2-image
 
 //Path to a program.
 CMAKE_RANLIB:FILEPATH=/Users/longnguyen/pspdev/bin/psp-ranlib
@@ -221,8 +221,20 @@ CMAKE_VERBOSE_MAKEFILE:BOOL=FALSE
 //Encrypt the PRX to allow running on official firmware
 ENC_PRX:BOOL=OFF
 
+//Arguments to supply to pkg-config
+PKG_CONFIG_ARGN:STRING=
+
 //Path to pkg-config
 PKG_CONFIG_EXECUTABLE:STRING=/Users/longnguyen/pspdev/bin/psp-pkg-config
+
+//Value Computed by CMake
+Project_BINARY_DIR:STATIC=/Users/longnguyen/Downloads/ppsspp/ppsspp
+
+//Value Computed by CMake
+Project_IS_TOP_LEVEL:STATIC=ON
+
+//Value Computed by CMake
+Project_SOURCE_DIR:STATIC=/Users/longnguyen/Downloads/ppsspp/ppsspp
 
 //Value Computed by CMake
 hello_BINARY_DIR:STATIC=/Users/longnguyen/Downloads/ppsspp/ppsspp
@@ -233,6 +245,123 @@ hello_IS_TOP_LEVEL:STATIC=ON
 //Value Computed by CMake
 hello_SOURCE_DIR:STATIC=/Users/longnguyen/Downloads/ppsspp/ppsspp
 
+//Path to a library.
+pkgcfg_lib_SDL2_GL:FILEPATH=/Users/longnguyen/pspdev/psp/lib/libGL.a
+
+//Path to a library.
+pkgcfg_lib_SDL2_IMAGE_GL:FILEPATH=/Users/longnguyen/pspdev/psp/lib/libGL.a
+
+//Path to a library.
+pkgcfg_lib_SDL2_IMAGE_SDL2:FILEPATH=/Users/longnguyen/pspdev/psp/lib/libSDL2.a
+
+//Path to a library.
+pkgcfg_lib_SDL2_IMAGE_SDL2_image:FILEPATH=/Users/longnguyen/pspdev/psp/lib/libSDL2_image.a
+
+//Path to a library.
+pkgcfg_lib_SDL2_IMAGE_SDL2main:FILEPATH=/Users/longnguyen/pspdev/psp/lib/libSDL2main.a
+
+//Path to a library.
+pkgcfg_lib_SDL2_IMAGE_jpeg:FILEPATH=/Users/longnguyen/pspdev/psp/lib/libjpeg.a
+
+//Path to a library.
+pkgcfg_lib_SDL2_IMAGE_m:FILEPATH=/Users/longnguyen/pspdev/psp/lib/libm.a
+
+//Path to a library.
+pkgcfg_lib_SDL2_IMAGE_png16:FILEPATH=/Users/longnguyen/pspdev/psp/lib/libpng16.a
+
+//Path to a library.
+pkgcfg_lib_SDL2_IMAGE_pspaudio:FILEPATH=/Users/longnguyen/pspdev/psp/sdk/lib/libpspaudio.a
+
+//Path to a library.
+pkgcfg_lib_SDL2_IMAGE_pspctrl:FILEPATH=/Users/longnguyen/pspdev/psp/sdk/lib/libpspctrl.a
+
+//Path to a library.
+pkgcfg_lib_SDL2_IMAGE_pspdisplay:FILEPATH=/Users/longnguyen/pspdev/psp/sdk/lib/libpspdisplay.a
+
+//Path to a library.
+pkgcfg_lib_SDL2_IMAGE_pspge:FILEPATH=/Users/longnguyen/pspdev/psp/sdk/lib/libpspge.a
+
+//Path to a library.
+pkgcfg_lib_SDL2_IMAGE_pspgu:FILEPATH=/Users/longnguyen/pspdev/psp/sdk/lib/libpspgu.a
+
+//Path to a library.
+pkgcfg_lib_SDL2_IMAGE_psphprm:FILEPATH=/Users/longnguyen/pspdev/psp/sdk/lib/libpsphprm.a
+
+//Path to a library.
+pkgcfg_lib_SDL2_IMAGE_psppower:FILEPATH=/Users/longnguyen/pspdev/psp/sdk/lib/libpsppower.a
+
+//Path to a library.
+pkgcfg_lib_SDL2_IMAGE_pspvfpu:FILEPATH=/Users/longnguyen/pspdev/psp/sdk/lib/libpspvfpu.a
+
+//Path to a library.
+pkgcfg_lib_SDL2_IMAGE_pspvram:FILEPATH=/Users/longnguyen/pspdev/psp/lib/libpspvram.a
+
+//Path to a library.
+pkgcfg_lib_SDL2_IMAGE_z:FILEPATH=/Users/longnguyen/pspdev/psp/lib/libz.a
+
+//Path to a library.
+pkgcfg_lib_SDL2_SDL2:FILEPATH=/Users/longnguyen/pspdev/psp/lib/libSDL2.a
+
+//Path to a library.
+pkgcfg_lib_SDL2_SDL2main:FILEPATH=/Users/longnguyen/pspdev/psp/lib/libSDL2main.a
+
+//Path to a library.
+pkgcfg_lib_SDL2_m:FILEPATH=/Users/longnguyen/pspdev/psp/lib/libm.a
+
+//Path to a library.
+pkgcfg_lib_SDL2_pspaudio:FILEPATH=/Users/longnguyen/pspdev/psp/sdk/lib/libpspaudio.a
+
+//Path to a library.
+pkgcfg_lib_SDL2_pspctrl:FILEPATH=/Users/longnguyen/pspdev/psp/sdk/lib/libpspctrl.a
+
+//Path to a library.
+pkgcfg_lib_SDL2_pspdisplay:FILEPATH=/Users/longnguyen/pspdev/psp/sdk/lib/libpspdisplay.a
+
+//Path to a library.
+pkgcfg_lib_SDL2_pspge:FILEPATH=/Users/longnguyen/pspdev/psp/sdk/lib/libpspge.a
+
+//Path to a library.
+pkgcfg_lib_SDL2_pspgu:FILEPATH=/Users/longnguyen/pspdev/psp/sdk/lib/libpspgu.a
+
+//Path to a library.
+pkgcfg_lib_SDL2_psphprm:FILEPATH=/Users/longnguyen/pspdev/psp/sdk/lib/libpsphprm.a
+
+//Path to a library.
+pkgcfg_lib_SDL2_psppower:FILEPATH=/Users/longnguyen/pspdev/psp/sdk/lib/libpsppower.a
+
+//Path to a library.
+pkgcfg_lib_SDL2_pspvfpu:FILEPATH=/Users/longnguyen/pspdev/psp/sdk/lib/libpspvfpu.a
+
+//Path to a library.
+pkgcfg_lib_SDL2_pspvram:FILEPATH=/Users/longnguyen/pspdev/psp/lib/libpspvram.a
+
+//Value Computed by CMake
+pspsdl-image_BINARY_DIR:STATIC=/Users/longnguyen/Downloads/ppsspp/ppsspp
+
+//Value Computed by CMake
+pspsdl-image_IS_TOP_LEVEL:STATIC=ON
+
+//Value Computed by CMake
+pspsdl-image_SOURCE_DIR:STATIC=/Users/longnguyen/Downloads/ppsspp/ppsspp
+
+//Value Computed by CMake
+pspsdl2-anim-sample_BINARY_DIR:STATIC=/Users/longnguyen/Downloads/ppsspp/ppsspp
+
+//Value Computed by CMake
+pspsdl2-anim-sample_IS_TOP_LEVEL:STATIC=ON
+
+//Value Computed by CMake
+pspsdl2-anim-sample_SOURCE_DIR:STATIC=/Users/longnguyen/Downloads/ppsspp/ppsspp
+
+//Value Computed by CMake
+pspsdl2-sample_BINARY_DIR:STATIC=/Users/longnguyen/Downloads/ppsspp/ppsspp
+
+//Value Computed by CMake
+pspsdl2-sample_IS_TOP_LEVEL:STATIC=ON
+
+//Value Computed by CMake
+pspsdl2-sample_SOURCE_DIR:STATIC=/Users/longnguyen/Downloads/ppsspp/ppsspp
+
 //Value Computed by CMake
 retro_game_BINARY_DIR:STATIC=/Users/longnguyen/Downloads/ppsspp/ppsspp
 
@@ -241,6 +370,15 @@ retro_game_IS_TOP_LEVEL:STATIC=ON
 
 //Value Computed by CMake
 retro_game_SOURCE_DIR:STATIC=/Users/longnguyen/Downloads/ppsspp/ppsspp
+
+//Value Computed by CMake
+sdl2-image_BINARY_DIR:STATIC=/Users/longnguyen/Downloads/ppsspp/ppsspp
+
+//Value Computed by CMake
+sdl2-image_IS_TOP_LEVEL:STATIC=ON
+
+//Value Computed by CMake
+sdl2-image_SOURCE_DIR:STATIC=/Users/longnguyen/Downloads/ppsspp/ppsspp
 
 //Value Computed by CMake
 shape_BINARY_DIR:STATIC=/Users/longnguyen/Downloads/ppsspp/ppsspp
@@ -408,4 +546,143 @@ CMAKE_TAPI-ADVANCED:INTERNAL=1
 CMAKE_UNAME:INTERNAL=/usr/bin/uname
 //ADVANCED property for variable: CMAKE_VERBOSE_MAKEFILE
 CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
+//Details about finding PkgConfig
+FIND_PACKAGE_MESSAGE_DETAILS_PkgConfig:INTERNAL=[/Users/longnguyen/pspdev/bin/psp-pkg-config][v2.5.1()]
+//ADVANCED property for variable: PKG_CONFIG_ARGN
+PKG_CONFIG_ARGN-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: PKG_CONFIG_EXECUTABLE
+PKG_CONFIG_EXECUTABLE-ADVANCED:INTERNAL=1
+SDL2_CFLAGS:INTERNAL=-I/Users/longnguyen/pspdev/psp/include;-I/Users/longnguyen/pspdev/psp/include/SDL2
+SDL2_CFLAGS_I:INTERNAL=
+SDL2_CFLAGS_OTHER:INTERNAL=
+SDL2_FOUND:INTERNAL=1
+SDL2_IMAGE_CFLAGS:INTERNAL=-I/Users/longnguyen/pspdev/psp/include/SDL2;-I/Users/longnguyen/pspdev/psp/include;-I/Users/longnguyen/pspdev/psp/include/libpng16
+SDL2_IMAGE_CFLAGS_I:INTERNAL=
+SDL2_IMAGE_CFLAGS_OTHER:INTERNAL=
+SDL2_IMAGE_FOUND:INTERNAL=1
+SDL2_IMAGE_INCLUDEDIR:INTERNAL=/Users/longnguyen/pspdev/psp/include
+SDL2_IMAGE_INCLUDE_DIRS:INTERNAL=/Users/longnguyen/pspdev/psp/include/SDL2;/Users/longnguyen/pspdev/psp/include;/Users/longnguyen/pspdev/psp/include/libpng16
+SDL2_IMAGE_LDFLAGS:INTERNAL=-L/Users/longnguyen/pspdev/psp/lib;-lSDL2_image;-lSDL2main;-lSDL2;-lm;-lGL;-lpspvram;-lpspaudio;-lpspvfpu;-lpspdisplay;-lpspgu;-lpspge;-lpsphprm;-lpspctrl;-lpsppower;-ljpeg;-lpng16;-lm;-lz
+SDL2_IMAGE_LDFLAGS_OTHER:INTERNAL=
+SDL2_IMAGE_LIBDIR:INTERNAL=/Users/longnguyen/pspdev/psp/lib
+SDL2_IMAGE_LIBRARIES:INTERNAL=SDL2_image;SDL2main;SDL2;m;GL;pspvram;pspaudio;pspvfpu;pspdisplay;pspgu;pspge;psphprm;pspctrl;psppower;jpeg;png16;m;z
+SDL2_IMAGE_LIBRARY_DIRS:INTERNAL=/Users/longnguyen/pspdev/psp/lib
+SDL2_IMAGE_LIBS:INTERNAL=
+SDL2_IMAGE_LIBS_L:INTERNAL=
+SDL2_IMAGE_LIBS_OTHER:INTERNAL=
+SDL2_IMAGE_LIBS_PATHS:INTERNAL=
+SDL2_IMAGE_MODULE_NAME:INTERNAL=SDL2_image
+SDL2_IMAGE_PREFIX:INTERNAL=/Users/longnguyen/pspdev/psp
+SDL2_IMAGE_SDL2_image_INCLUDEDIR:INTERNAL=
+SDL2_IMAGE_SDL2_image_LIBDIR:INTERNAL=
+SDL2_IMAGE_SDL2_image_PREFIX:INTERNAL=
+SDL2_IMAGE_SDL2_image_VERSION:INTERNAL=
+SDL2_IMAGE_STATIC_CFLAGS:INTERNAL=-I/Users/longnguyen/pspdev/psp/include/SDL2;-I/Users/longnguyen/pspdev/psp/include;-I/Users/longnguyen/pspdev/psp/include/libpng16
+SDL2_IMAGE_STATIC_CFLAGS_I:INTERNAL=
+SDL2_IMAGE_STATIC_CFLAGS_OTHER:INTERNAL=
+SDL2_IMAGE_STATIC_INCLUDE_DIRS:INTERNAL=/Users/longnguyen/pspdev/psp/include/SDL2;/Users/longnguyen/pspdev/psp/include;/Users/longnguyen/pspdev/psp/include/libpng16
+SDL2_IMAGE_STATIC_LDFLAGS:INTERNAL=-L/Users/longnguyen/pspdev/psp/lib;-lSDL2_image;-lSDL2main;-lSDL2;-lm;-lGL;-lpspvram;-lpspaudio;-lpspvfpu;-lpspdisplay;-lpspgu;-lpspge;-lpsphprm;-lpspctrl;-lpsppower;-ljpeg;-lpng16;-lm;-lz
+SDL2_IMAGE_STATIC_LDFLAGS_OTHER:INTERNAL=
+SDL2_IMAGE_STATIC_LIBDIR:INTERNAL=
+SDL2_IMAGE_STATIC_LIBRARIES:INTERNAL=SDL2_image;SDL2main;SDL2;m;GL;pspvram;pspaudio;pspvfpu;pspdisplay;pspgu;pspge;psphprm;pspctrl;psppower;jpeg;png16;m;z
+SDL2_IMAGE_STATIC_LIBRARY_DIRS:INTERNAL=/Users/longnguyen/pspdev/psp/lib
+SDL2_IMAGE_STATIC_LIBS:INTERNAL=
+SDL2_IMAGE_STATIC_LIBS_L:INTERNAL=
+SDL2_IMAGE_STATIC_LIBS_OTHER:INTERNAL=
+SDL2_IMAGE_STATIC_LIBS_PATHS:INTERNAL=
+SDL2_IMAGE_VERSION:INTERNAL=2.8.6
+SDL2_INCLUDEDIR:INTERNAL=/Users/longnguyen/pspdev/psp/include
+SDL2_INCLUDE_DIRS:INTERNAL=/Users/longnguyen/pspdev/psp/include;/Users/longnguyen/pspdev/psp/include/SDL2
+SDL2_LDFLAGS:INTERNAL=-L/Users/longnguyen/pspdev/psp/lib;-lSDL2main;-lSDL2;-lm;-lGL;-lpspvram;-lpspaudio;-lpspvfpu;-lpspdisplay;-lpspgu;-lpspge;-lpsphprm;-lpspctrl;-lpsppower
+SDL2_LDFLAGS_OTHER:INTERNAL=
+SDL2_LIBDIR:INTERNAL=/Users/longnguyen/pspdev/psp/lib
+SDL2_LIBRARIES:INTERNAL=SDL2main;SDL2;m;GL;pspvram;pspaudio;pspvfpu;pspdisplay;pspgu;pspge;psphprm;pspctrl;psppower
+SDL2_LIBRARY_DIRS:INTERNAL=/Users/longnguyen/pspdev/psp/lib
+SDL2_LIBS:INTERNAL=
+SDL2_LIBS_L:INTERNAL=
+SDL2_LIBS_OTHER:INTERNAL=
+SDL2_LIBS_PATHS:INTERNAL=
+SDL2_MODULE_NAME:INTERNAL=sdl2
+SDL2_PREFIX:INTERNAL=/Users/longnguyen/pspdev/psp
+SDL2_STATIC_CFLAGS:INTERNAL=-I/Users/longnguyen/pspdev/psp/include;-I/Users/longnguyen/pspdev/psp/include/SDL2
+SDL2_STATIC_CFLAGS_I:INTERNAL=
+SDL2_STATIC_CFLAGS_OTHER:INTERNAL=
+SDL2_STATIC_INCLUDE_DIRS:INTERNAL=/Users/longnguyen/pspdev/psp/include;/Users/longnguyen/pspdev/psp/include/SDL2
+SDL2_STATIC_LDFLAGS:INTERNAL=-L/Users/longnguyen/pspdev/psp/lib;-lSDL2main;-lSDL2;-lm;-lGL;-lpspvram;-lpspaudio;-lpspvfpu;-lpspdisplay;-lpspgu;-lpspge;-lpsphprm;-lpspctrl;-lpsppower
+SDL2_STATIC_LDFLAGS_OTHER:INTERNAL=
+SDL2_STATIC_LIBDIR:INTERNAL=
+SDL2_STATIC_LIBRARIES:INTERNAL=SDL2main;SDL2;m;GL;pspvram;pspaudio;pspvfpu;pspdisplay;pspgu;pspge;psphprm;pspctrl;psppower
+SDL2_STATIC_LIBRARY_DIRS:INTERNAL=/Users/longnguyen/pspdev/psp/lib
+SDL2_STATIC_LIBS:INTERNAL=
+SDL2_STATIC_LIBS_L:INTERNAL=
+SDL2_STATIC_LIBS_OTHER:INTERNAL=
+SDL2_STATIC_LIBS_PATHS:INTERNAL=
+SDL2_VERSION:INTERNAL=2.32.8
+SDL2_sdl2_INCLUDEDIR:INTERNAL=
+SDL2_sdl2_LIBDIR:INTERNAL=
+SDL2_sdl2_PREFIX:INTERNAL=
+SDL2_sdl2_VERSION:INTERNAL=
+__pkg_config_checked_SDL2:INTERNAL=1
+__pkg_config_checked_SDL2_IMAGE:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_SDL2_GL
+pkgcfg_lib_SDL2_GL-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_SDL2_IMAGE_GL
+pkgcfg_lib_SDL2_IMAGE_GL-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_SDL2_IMAGE_SDL2
+pkgcfg_lib_SDL2_IMAGE_SDL2-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_SDL2_IMAGE_SDL2_image
+pkgcfg_lib_SDL2_IMAGE_SDL2_image-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_SDL2_IMAGE_SDL2main
+pkgcfg_lib_SDL2_IMAGE_SDL2main-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_SDL2_IMAGE_jpeg
+pkgcfg_lib_SDL2_IMAGE_jpeg-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_SDL2_IMAGE_m
+pkgcfg_lib_SDL2_IMAGE_m-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_SDL2_IMAGE_png16
+pkgcfg_lib_SDL2_IMAGE_png16-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_SDL2_IMAGE_pspaudio
+pkgcfg_lib_SDL2_IMAGE_pspaudio-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_SDL2_IMAGE_pspctrl
+pkgcfg_lib_SDL2_IMAGE_pspctrl-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_SDL2_IMAGE_pspdisplay
+pkgcfg_lib_SDL2_IMAGE_pspdisplay-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_SDL2_IMAGE_pspge
+pkgcfg_lib_SDL2_IMAGE_pspge-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_SDL2_IMAGE_pspgu
+pkgcfg_lib_SDL2_IMAGE_pspgu-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_SDL2_IMAGE_psphprm
+pkgcfg_lib_SDL2_IMAGE_psphprm-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_SDL2_IMAGE_psppower
+pkgcfg_lib_SDL2_IMAGE_psppower-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_SDL2_IMAGE_pspvfpu
+pkgcfg_lib_SDL2_IMAGE_pspvfpu-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_SDL2_IMAGE_pspvram
+pkgcfg_lib_SDL2_IMAGE_pspvram-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_SDL2_IMAGE_z
+pkgcfg_lib_SDL2_IMAGE_z-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_SDL2_SDL2
+pkgcfg_lib_SDL2_SDL2-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_SDL2_SDL2main
+pkgcfg_lib_SDL2_SDL2main-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_SDL2_m
+pkgcfg_lib_SDL2_m-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_SDL2_pspaudio
+pkgcfg_lib_SDL2_pspaudio-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_SDL2_pspctrl
+pkgcfg_lib_SDL2_pspctrl-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_SDL2_pspdisplay
+pkgcfg_lib_SDL2_pspdisplay-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_SDL2_pspge
+pkgcfg_lib_SDL2_pspge-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_SDL2_pspgu
+pkgcfg_lib_SDL2_pspgu-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_SDL2_psphprm
+pkgcfg_lib_SDL2_psphprm-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_SDL2_psppower
+pkgcfg_lib_SDL2_psppower-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_SDL2_pspvfpu
+pkgcfg_lib_SDL2_pspvfpu-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_SDL2_pspvram
+pkgcfg_lib_SDL2_pspvram-ADVANCED:INTERNAL=1
+prefix_result:INTERNAL=/Users/longnguyen/pspdev/psp/lib
 
