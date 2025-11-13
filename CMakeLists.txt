@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.11)
 
 project(retro_game)
 
-add_executable(${PROJECT_NAME} main.c player/player.c enemies/enemy.c ui/ui.c)
+add_executable(${PROJECT_NAME} main.c player/player.c enemies/enemy.c ui/ui.c background/background.c)
 
 include(FindPkgConfig)
 pkg_search_module(SDL2 REQUIRED sdl2)

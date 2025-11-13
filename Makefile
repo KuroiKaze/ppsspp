@@ -129,6 +129,30 @@ retro_game/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/build
 .PHONY : retro_game/fast
 
+background/background.obj: background/background.c.obj
+.PHONY : background/background.obj
+
+# target to build an object file
+background/background.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/background/background.c.obj
+.PHONY : background/background.c.obj
+
+background/background.i: background/background.c.i
+.PHONY : background/background.i
+
+# target to preprocess a source file
+background/background.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/background/background.c.i
+.PHONY : background/background.c.i
+
+background/background.s: background/background.c.s
+.PHONY : background/background.s
+
+# target to generate assembly for a file
+background/background.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/background/background.c.s
+.PHONY : background/background.c.s
+
 enemies/enemy.obj: enemies/enemy.c.obj
 .PHONY : enemies/enemy.obj
 
@@ -234,6 +258,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... retro_game"
+	@echo "... background/background.obj"
+	@echo "... background/background.i"
+	@echo "... background/background.s"
 	@echo "... enemies/enemy.obj"
 	@echo "... enemies/enemy.i"
 	@echo "... enemies/enemy.s"
