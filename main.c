@@ -9,6 +9,7 @@
 #include "player/player.h"
 #include "enemies/enemy.h"
 #include "ui/ui.h"
+#include "background/background.h"
 
 #define SCREEN_WIDTH 480
 #define SCREEN_HEIGHT 272
@@ -71,6 +72,9 @@ int main(int argc, char *argv[]) {
 
     player = player_init(renderer); 
     mummy_enemy = enemy_init(renderer, 350, 100); 
+    BackgroundLayer layer_far_back = {0};
+    BackgroundLayer layer_mid = {0};
+    BackgroundLayer layer_fore = {0};
 
     if (!player.idle_frames[0] || !player.attack_frames[0]) {
         fprintf(stderr, "Fataler Fehler: Spieler-Ressourcen konnten nicht geladen werden. Beende das Spiel.\n");
@@ -79,6 +83,15 @@ int main(int argc, char *argv[]) {
     if (!mummy_enemy.idle_frames[0]) {
         fprintf(stderr, "Fataler Fehler: Gegner-Ressourcen konnten nicht geladen werden. Beende das Spiel.\n");
         goto cleanup; 
+    }
+
+    layer_far_back = background_layer_init(renderer, "resources/Gothicvania Collection Files/Assets/Environments/Battle Backgrounds/Pack 1/Cave-battle/PNG/back.png", 0.1f);
+    layer_mid = background_layer_init(renderer, "resources/Gothicvania Collection Files/Assets/Environments/Battle Backgrounds/Pack 1/Cave-battle/PNG/middle.png", 0.3f);
+    layer_fore = background_layer_init(renderer, "resources/Gothicvania Collection Files/Assets/Environments/Battle Backgrounds/Pack 1/Cave-battle/PNG/front.png", 0.5f);
+
+    if (!layer_far_back.texture || !layer_mid.texture || !layer_fore.texture) {
+        fprintf(stderr, "Fataler Fehler: Hintergrund-Ressourcen konnten nicht geladen werden.\n");
+        // goto cleanup; // optional: hier das Spiel beenden
     }
     
     SceCtrlData pad;
@@ -91,9 +104,15 @@ int main(int argc, char *argv[]) {
         if (pad.Buttons & PSP_CTRL_START || pad.Buttons & PSP_CTRL_SELECT) running = 0;
 
         int is_moving = player_handle_input(&player, &pad);
+        int player_movement_x = (player.current_x - player.prev_x);
+        
         player_update_animation(&player, is_moving);
         player_update_attack(&player);
         enemy_update_animation(&mummy_enemy);
+
+        background_layer_update(&layer_far_back, player_movement_x);
+        background_layer_update(&layer_mid, player_movement_x);
+        background_layer_update(&layer_fore, player_movement_x);
 
         if (player.attack_rect.w > 0) { 
             if (mummy_enemy.health > 0 && SDL_HasIntersection(&player.attack_rect, &mummy_enemy.rect)) {
@@ -124,10 +143,15 @@ int main(int argc, char *argv[]) {
         }
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_RenderClear(renderer); 
+        SDL_RenderClear(renderer);
+
+        background_layer_render(renderer, &layer_far_back, SCREEN_WIDTH, SCREEN_HEIGHT);
+        background_layer_render(renderer, &layer_mid, SCREEN_WIDTH, SCREEN_HEIGHT);
+        background_layer_render(renderer, &layer_fore, SCREEN_WIDTH, SCREEN_HEIGHT);
 
         enemy_render(renderer, &mummy_enemy); 
         player_render(renderer, &player, is_moving);
+
         
         ui_render_health_bar(renderer, player.health);
         

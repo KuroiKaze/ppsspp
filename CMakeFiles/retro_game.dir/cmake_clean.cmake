@@ -1,4 +1,6 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/retro_game.dir/background/background.c.obj"
+  "CMakeFiles/retro_game.dir/background/background.c.obj.d"
   "CMakeFiles/retro_game.dir/enemies/enemy.c.obj"
   "CMakeFiles/retro_game.dir/enemies/enemy.c.obj.d"
   "CMakeFiles/retro_game.dir/main.c.obj"

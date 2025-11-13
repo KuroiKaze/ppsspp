@@ -8,6 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
+  "/Users/longnguyen/Downloads/ppsspp/ppsspp/background/background.c" "CMakeFiles/retro_game.dir/background/background.c.obj" "gcc" "CMakeFiles/retro_game.dir/background/background.c.obj.d"
   "/Users/longnguyen/Downloads/ppsspp/ppsspp/enemies/enemy.c" "CMakeFiles/retro_game.dir/enemies/enemy.c.obj" "gcc" "CMakeFiles/retro_game.dir/enemies/enemy.c.obj.d"
   "/Users/longnguyen/Downloads/ppsspp/ppsspp/main.c" "CMakeFiles/retro_game.dir/main.c.obj" "gcc" "CMakeFiles/retro_game.dir/main.c.obj.d"
   "/Users/longnguyen/Downloads/ppsspp/ppsspp/player/player.c" "CMakeFiles/retro_game.dir/player/player.c.obj" "gcc" "CMakeFiles/retro_game.dir/player/player.c.obj.d"

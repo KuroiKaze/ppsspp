@@ -39,9 +39,12 @@ typedef struct {
     
     int health;
     SDL_RendererFlip flip_direction; 
-    Uint32 hurt_timer_end;      // Ende der Unverwundbarkeitszeit (I-Frames)
-    Uint32 attack_timer_end;    // NEU: Ende der Attack-Phase
-    Uint32 attack_cooldown_end; // NEU: Ende des Attack-Cooldowns
+    Uint32 hurt_timer_end;      
+    Uint32 attack_timer_end;    
+    Uint32 attack_cooldown_end; 
+    // NEU: Für Parallaxe-Scrolling in main.c
+    int prev_x; // Vorherige X-Koordinate der Hitbox
+    int current_x; // Aktuelle X-Koordinate der Hitbox
 
 } Player;
 

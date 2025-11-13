@@ -102,15 +102,20 @@ Player player_init(SDL_Renderer *renderer) {
     player.attack_timer_end = 0;
     player.attack_cooldown_end = 0;
     player.current_attack_frame = 0;
-    player.attack_rect = (SDL_Rect){0, 0, 0, 0}; // Initialisiere Attack-Hitbox als leer
+    player.attack_rect = (SDL_Rect){0, 0, 0, 0};
+
+    player.prev_x = player.rect.x;
+    player.current_x = player.rect.x;
 
     return player;
 }
 
 int player_handle_input(Player *player, const SceCtrlData *pad) {
     int is_moving = 0;
+    player->prev_x = player->rect.x;
 
     if (SDL_GetTicks() < player->attack_timer_end) {
+        player->current_x = player->rect.x;
         return 0; 
     }
 
@@ -153,6 +158,7 @@ int player_handle_input(Player *player, const SceCtrlData *pad) {
        player_decrease_health(player, 10);
     }
     
+    player->current_x = player->rect.x;
     return is_moving;
 }
 

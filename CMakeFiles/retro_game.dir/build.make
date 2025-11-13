@@ -128,12 +128,27 @@ CMakeFiles/retro_game.dir/ui/ui.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/retro_game.dir/ui/ui.c.s"
 	/Users/longnguyen/pspdev/bin/psp-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /Users/longnguyen/Downloads/ppsspp/ppsspp/ui/ui.c -o CMakeFiles/retro_game.dir/ui/ui.c.s
 
+CMakeFiles/retro_game.dir/background/background.c.obj: CMakeFiles/retro_game.dir/flags.make
+CMakeFiles/retro_game.dir/background/background.c.obj: background/background.c
+CMakeFiles/retro_game.dir/background/background.c.obj: CMakeFiles/retro_game.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/longnguyen/Downloads/ppsspp/ppsspp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building C object CMakeFiles/retro_game.dir/background/background.c.obj"
+	/Users/longnguyen/pspdev/bin/psp-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/retro_game.dir/background/background.c.obj -MF CMakeFiles/retro_game.dir/background/background.c.obj.d -o CMakeFiles/retro_game.dir/background/background.c.obj -c /Users/longnguyen/Downloads/ppsspp/ppsspp/background/background.c
+
+CMakeFiles/retro_game.dir/background/background.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/retro_game.dir/background/background.c.i"
+	/Users/longnguyen/pspdev/bin/psp-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /Users/longnguyen/Downloads/ppsspp/ppsspp/background/background.c > CMakeFiles/retro_game.dir/background/background.c.i
+
+CMakeFiles/retro_game.dir/background/background.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/retro_game.dir/background/background.c.s"
+	/Users/longnguyen/pspdev/bin/psp-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /Users/longnguyen/Downloads/ppsspp/ppsspp/background/background.c -o CMakeFiles/retro_game.dir/background/background.c.s
+
 # Object files for target retro_game
 retro_game_OBJECTS = \
 "CMakeFiles/retro_game.dir/main.c.obj" \
 "CMakeFiles/retro_game.dir/player/player.c.obj" \
 "CMakeFiles/retro_game.dir/enemies/enemy.c.obj" \
-"CMakeFiles/retro_game.dir/ui/ui.c.obj"
+"CMakeFiles/retro_game.dir/ui/ui.c.obj" \
+"CMakeFiles/retro_game.dir/background/background.c.obj"
 
 # External object files for target retro_game
 retro_game_EXTERNAL_OBJECTS =
@@ -142,9 +157,10 @@ retro_game: CMakeFiles/retro_game.dir/main.c.obj
 retro_game: CMakeFiles/retro_game.dir/player/player.c.obj
 retro_game: CMakeFiles/retro_game.dir/enemies/enemy.c.obj
 retro_game: CMakeFiles/retro_game.dir/ui/ui.c.obj
+retro_game: CMakeFiles/retro_game.dir/background/background.c.obj
 retro_game: CMakeFiles/retro_game.dir/build.make
 retro_game: CMakeFiles/retro_game.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/longnguyen/Downloads/ppsspp/ppsspp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking C executable retro_game"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/longnguyen/Downloads/ppsspp/ppsspp/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking C executable retro_game"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/retro_game.dir/link.txt --verbose=$(VERBOSE)
 	/opt/homebrew/bin/cmake -E cmake_echo_color --cyan Not\ stripping\ binary\ for\ target\ retro_game,\ build\ type\ is\ .
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold "Calling psp-fixup-imports for target retro_game"
