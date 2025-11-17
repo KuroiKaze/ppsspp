@@ -20,8 +20,10 @@ Enemy enemy_init(SDL_Renderer *renderer, int initial_x, int initial_y) {
     Enemy enemy = {0};
     char path_buffer[256];
 
+    const char* asset_root = "host0:/";
+
     for (int i = 0; i < ENEMY_IDLE_FRAME_COUNT; i++) {
-        sprintf(path_buffer, "%s%d.png", ENEMY_IDLE_BASE_PATH, i + 1); 
+        sprintf(path_buffer, "%s%s%d.png", asset_root, ENEMY_IDLE_BASE_PATH, i + 1);
         enemy.idle_frames[i] = load_texture(renderer, path_buffer);
         if (!enemy.idle_frames[i]) {
             fprintf(stderr, "Error: Enemy Idle Frame %d could not be loaded (%s).\n", i + 1, path_buffer);
