@@ -32,13 +32,8 @@ if(PSP)
         TITLE ${PROJECT_NAME}
         VERSION 01.00
     )
+    #create a prx file
+    target_compile_definitions(${PROJECT_NAME} PRIVATE BUILD_PRX=1)
 
-# ----------------------------------------------------
-else()
-    # Desktop/Emulator Linking (Keep standard dynamic linking)
-    target_link_libraries(${PROJECT_NAME} PRIVATE
-        ${SDL2_LIBRARIES}
-        ${SDL2_IMAGE_LIBRARIES}
-    )
 endif()
 # ----------------------------------------------------

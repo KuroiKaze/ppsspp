@@ -36,10 +36,12 @@ Player player_init(SDL_Renderer *renderer) {
     Player player = {0};
     Player failed_player = {0}; // Struktur für den Fehlerfall
     char path_buffer[256];
+
+    const char* asset_root = "host0:/";
     
     // idle sprites
     for (int i = 0; i < IDLE_FRAME_COUNT; i++) {
-        sprintf(path_buffer, "%s%d.png", PLAYER_IDLE_BASE_PATH, i + 1); 
+        sprintf(path_buffer, "%s%s%d.png", asset_root, PLAYER_IDLE_BASE_PATH, i + 1);
         player.idle_frames[i] = load_texture(renderer, path_buffer);
         if (!player.idle_frames[i]) {
             fprintf(stderr, "Fehler: Idle Frame %d konnte nicht geladen werden (%s).\n", i + 1, path_buffer);
@@ -52,7 +54,7 @@ Player player_init(SDL_Renderer *renderer) {
 
     // run sprites
     for (int i = 0; i < RUN_FRAME_COUNT; i++) {
-        sprintf(path_buffer, "%s%d.png", PLAYER_RUN_BASE_PATH, i + 1);
+        sprintf(path_buffer, "%s%s%d.png", asset_root, PLAYER_RUN_BASE_PATH, i + 1);
         player.running_frames[i] = load_texture(renderer, path_buffer);
         if (!player.running_frames[i]) {
             fprintf(stderr, "Fehler: Running Frame %d konnte nicht geladen werden (%s).\n", i + 1, path_buffer);
@@ -63,7 +65,7 @@ Player player_init(SDL_Renderer *renderer) {
     
     // attack sprites
     for (int i = 0; i < ATTACK_FRAME_COUNT; i++) {
-        sprintf(path_buffer, "%s%d.png", PLAYER_ATTACK_BASE_PATH, i + 1);
+        sprintf(path_buffer, "%s%s%d.png", asset_root, PLAYER_ATTACK_BASE_PATH, i + 1);
         player.attack_frames[i] = load_texture(renderer, path_buffer);
         if (!player.attack_frames[i]) {
             fprintf(stderr, "Warnung: Attack Frame %d konnte nicht geladen werden (%s).\n", i + 1, path_buffer);
