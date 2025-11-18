@@ -9,7 +9,17 @@ extern SDL_Texture *load_texture(SDL_Renderer *renderer, const char *path);
 // Initialisiert einen einzelnen Layer
 BackgroundLayer background_layer_init(SDL_Renderer *renderer, const char *path, float speed) {
     BackgroundLayer layer = {0};
-    layer.texture = load_texture(renderer, path);
+
+    // VORHER: Hier wurde der Pfad erstellt, aber nicht verwendet.
+    const char* asset_root = "ur0:pspemu:/";
+    char full_path[256];
+    
+    // Annahme: 'path' enthält den relativen Pfad wie z.B. "resources/Gothicvania Collection Files/..."
+    snprintf(full_path, sizeof(full_path), "%s%s", asset_root, path);
+
+    // KORREKTUR: load_texture muss den vollständigen Pfad verwenden
+    layer.texture = load_texture(renderer, full_path); // <--- HIER KORRIGIERT
+
     layer.scroll_speed = speed;
     layer.offset_x = 0.0f;
     return layer;

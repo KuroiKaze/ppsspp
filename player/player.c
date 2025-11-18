@@ -37,7 +37,8 @@ Player player_init(SDL_Renderer *renderer) {
     Player failed_player = {0}; // Struktur für den Fehlerfall
     char path_buffer[256];
 
-    const char* asset_root = "host0:/";
+    //const char* asset_root = "host0:/";
+    const char* asset_root = "ur0:pspemu:/";
     
     // idle sprites
     for (int i = 0; i < IDLE_FRAME_COUNT; i++) {
