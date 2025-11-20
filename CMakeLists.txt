@@ -13,15 +13,12 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${SDL2_IMAGE_INCLUDE_DIRS}
 )
 
-# ----------------------------------------------------
-# ⚠️ START OF PLATFORM-SPECIFIC LINKING ⚠️
-# ----------------------------------------------------
-if(PSP)
-    # --- PSP-Specific Linking: Static Link (Must include ALL dependencies) ---
-    target_link_libraries(${PROJECT_NAME} PRIVATE
+target_link_libraries(${PROJECT_NAME} PRIVATE
         ${SDL2_LIBRARIES}
         ${SDL2_IMAGE_LIBRARIES}
-    )
+)
+
+if(PSP)
 
     # Create an EBOOT.PBP file
     create_pbp_file(
@@ -35,12 +32,4 @@ if(PSP)
     #create a prx file
     target_compile_definitions(${PROJECT_NAME} PRIVATE BUILD_PRX=1)
 
-
-# ----------------------------------------------------
-else()
-    # Desktop/Emulator Linking (Keep standard dynamic linking)
-    target_link_libraries(${PROJECT_NAME} PRIVATE
-        ${SDL2_LIBRARIES}
-        ${SDL2_IMAGE_LIBRARIES}
-    )
 endif()
