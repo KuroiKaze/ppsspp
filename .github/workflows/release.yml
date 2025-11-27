@@ -24,6 +24,13 @@ jobs:
           export PSPDEV=/usr/local/pspdev
           export PATH=$PATH:$PSPDEV/bin
 
+      - name: Installiere CMake
+        run: |
+          # Der PSPDEV-Container basiert typischerweise auf Alpine Linux.
+          # Wir installieren cmake, da es nicht standardmäßig enthalten ist.
+          apk update
+          apk add cmake
+
       - name: PSP-Projekt bauen (mit oder ohne custom Skript)
         run: |
           # --- Priorisiere eigenes Build-Skript ---
