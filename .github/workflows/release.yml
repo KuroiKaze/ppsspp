@@ -1,0 +1,80 @@
+# Workflow-Name, sichtbar im GitHub Actions Tab
+name: 🎮 PSP EBOOT.PBP Release erstellen
+
+# Der Workflow wird nur bei Pushes auf dem main-Branch ausgelöst.
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  # Job 1: Baut das PSP-Projekt und erstellt die EBOOT.PBP
+  build_psp:
+    # Führt den Job im PSP Toolchain Container aus
+    runs-on: ubuntu-latest
+    container: ghcr.io/pspdev/psptoolchain:latest
+    
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+
+      - name: Umgebungsvariablen setzen
+        run: |
+          # Stellt sicher, dass die Umgebungsvariablen für das PSPDEV-Toolchain korrekt gesetzt sind
+          export PSPDEV=/usr/local/pspdev
+          export PATH=$PATH:$PSPDEV/bin
+
+      - name: CMake konfigurieren und PSP-Projekt bauen
+        run: |
+          # Annahme: Toolchain-Datei liegt im PSPDEV-Pfad
+          TOOLCHAIN_FILE="${PSPDEV}/share/pspsdk/cmake/Toolchain-psp.cmake"
+          
+          mkdir build
+          cd build
+          
+          # Konfiguriere CMake unter Verwendung der PSP Toolchain
+          cmake .. -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE} -DPSP=1
+          
+          # Starte den Build-Prozess und nutze alle verfügbaren Kerne
+          make -j $(getconf _NPROCESSORS_ONLN)
+          
+          # Die erstellte EBOOT.PBP liegt nun im 'build'-Verzeichnis
+
+      - name: EBOOT.PBP als Artefakt hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          # Name des Artefakts, das im nächsten Job heruntergeladen wird
+          name: psp-release-artifact
+          path: build/EBOOT.PBP
+          retention-days: 1 # Temporäre Speicherung
+
+  # Job 2: Erstellt das Release und lädt die EBOOT.PBP hoch
+  create_release:
+    # Stellt sicher, dass dieses Release nur nach erfolgreichem Build startet
+    needs: build_psp
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Build Artefakt herunterladen
+        uses: actions/download-artifact@v4
+        with:
+          name: psp-release-artifact
+          path: ./release_assets
+
+      - name: Kurzen SHA für Tag und Release-Name ermitteln
+        id: slug
+        run: echo "sha8=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_OUTPUT
+
+      - name: GitHub Release erstellen
+        uses: softprops/action-gh-release@v1
+        with:
+          # Verwendet den kurzen Commit-SHA als eindeutiges Tag
+          tag_name: v${{ steps.slug.outputs.sha8 }}
+          name: PSP Build ${{ steps.slug.outputs.sha8 }}
+          body: |
+            Automatisch erstelltes Release von Commit ${{ github.sha }}.
+            
+            
+          
+          # Hängt die EBOOT.PBP als Asset an das Release an
+          files: ./release_assets/EBOOT.PBP
