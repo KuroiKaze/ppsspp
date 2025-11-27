@@ -24,28 +24,43 @@ jobs:
           export PSPDEV=/usr/local/pspdev
           export PATH=$PATH:$PSPDEV/bin
 
-      - name: CMake konfigurieren und PSP-Projekt bauen
+      - name: PSP-Projekt bauen (mit oder ohne custom Skript)
         run: |
-          # Annahme: Toolchain-Datei liegt im PSPDEV-Pfad
-          TOOLCHAIN_FILE="${PSPDEV}/share/pspsdk/cmake/Toolchain-psp.cmake"
+          # --- Priorisiere eigenes Build-Skript ---
+          if [ -f build-psp.sh ]; then
+            echo "Führe benutzerdefiniertes PSP-Build-Skript (./build-psp.sh) aus."
+            chmod +x build-psp.sh
+            ./build-psp.sh
+            
+            # WICHTIG: Das custom Skript MUSS die EBOOT.PBP in das Verzeichnis ./psp-build/ legen!
+            
+          # --- Fallback auf standard CMake-Build ---
+          else
+            echo "Kein benutzerdefiniertes Skript gefunden. Führe Standard-CMake-Build aus."
+            
+            # Stellt sicher, dass das Build-Verzeichnis sauber ist, um Fehler zu vermeiden.
+            rm -rf psp-build
+            mkdir psp-build
+            cd psp-build
+            
+            # Annahme: Toolchain-Datei liegt im PSPDEV-Pfad
+            TOOLCHAIN_FILE="${PSPDEV}/share/pspsdk/cmake/Toolchain-psp.cmake"
+            
+            # Konfiguriere CMake unter Verwendung der PSP Toolchain
+            cmake .. -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE} -DPSP=1
+            
+            # Starte den Build-Prozess und nutze alle verfügbaren Kerne
+            make -j $(getconf _NPROCESSORS_ONLN)
+            
+            # Die erstellte EBOOT.PBP liegt nun im 'psp-build'-Verzeichnis
+          fi
           
-          mkdir build
-          cd build
-          
-          # Konfiguriere CMake unter Verwendung der PSP Toolchain
-          cmake .. -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE} -DPSP=1
-          
-          # Starte den Build-Prozess und nutze alle verfügbaren Kerne
-          make -j $(getconf _NPROCESSORS_ONLN)
-          
-          # Die erstellte EBOOT.PBP liegt nun im 'build'-Verzeichnis
-
       - name: EBOOT.PBP als Artefakt hochladen
         uses: actions/upload-artifact@v4
         with:
           # Name des Artefakts, das im nächsten Job heruntergeladen wird
           name: psp-release-artifact
-          path: build/EBOOT.PBP
+          path: psp-build/EBOOT.PBP # Pfad wurde aktualisiert
           retention-days: 1 # Temporäre Speicherung
 
   # Job 2: Erstellt das Release und lädt die EBOOT.PBP hoch
@@ -73,7 +88,6 @@ jobs:
           name: PSP Build ${{ steps.slug.outputs.sha8 }}
           body: |
             Automatisch erstelltes Release von Commit ${{ github.sha }}.
-            
             
           
           # Hängt die EBOOT.PBP als Asset an das Release an
