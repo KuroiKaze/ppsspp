@@ -20,8 +20,8 @@ Enemy enemy_init(SDL_Renderer *renderer, int initial_x, int initial_y) {
     Enemy enemy = {0};
     char path_buffer[256];
 
-    //const char* asset_root = "host0:/";
-    const char* asset_root = "ur0:pspemu:/";
+    const char* asset_root = "host0:/";
+    //const char* asset_root = "ur0:pspemu:/";
 
     for (int i = 0; i < ENEMY_IDLE_FRAME_COUNT; i++) {
         sprintf(path_buffer, "%s%s%d.png", asset_root, ENEMY_IDLE_BASE_PATH, i + 1);
@@ -74,52 +74,54 @@ void enemy_decrease_health(Enemy *enemy, int amount) {
 }
 
 
-void enemy_render(SDL_Renderer *renderer, Enemy *enemy) {
+void enemy_render(SDL_Renderer *renderer, Enemy *enemy, int camera_x, int camera_y) {
     SDL_Texture *current_texture = enemy->idle_frames[enemy->current_idle_frame];
     if (enemy->health <= 0) return;
-
     if (!current_texture) return;
 
+    // CALCULATE RENDER POS: World Pos - Camera Pos
     SDL_Rect render_rect = {
-        enemy->rect.x - enemy->offset_x,
-        enemy->rect.y - enemy->offset_y, 
-        enemy->sprite_w,                 
-        enemy->sprite_h               
+            (enemy->rect.x - enemy->offset_x) - camera_x,
+            (enemy->rect.y - enemy->offset_y) - camera_y,
+            enemy->sprite_w,
+            enemy->sprite_h
     };
 
     SDL_RenderCopy(renderer, current_texture, NULL, &render_rect);
-    
-    int bar_x = enemy->rect.x - enemy->offset_x + (enemy->sprite_w / 2) - (ENEMY_BAR_W / 2);
-    int bar_y = enemy->rect.y - ENEMY_BAR_H - ENEMY_BAR_OFFSET_Y;
+
+    // --- Draw Health Bar Relative to Camera ---
+    int bar_x = (enemy->rect.x - enemy->offset_x + (enemy->sprite_w / 2) - (ENEMY_BAR_W / 2)) - camera_x;
+    int bar_y = (enemy->rect.y - ENEMY_BAR_H - ENEMY_BAR_OFFSET_Y) - camera_y;
 
     SDL_Rect bar_background_rect = {bar_x, bar_y, ENEMY_BAR_W, ENEMY_BAR_H};
+
+    // Background (Grey)
     SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
     SDL_RenderFillRect(renderer, &bar_background_rect);
 
+    // Health (Red)
     float health_ratio = (float)enemy->health / (float)ENEMY_MAX_HEALTH;
     int health_width = (int)(ENEMY_BAR_W * health_ratio);
-
     SDL_Rect health_rect = {bar_x, bar_y, health_width, ENEMY_BAR_H};
 
-    SDL_SetRenderDrawColor(renderer, 200, 0, 0, 255); 
+    SDL_SetRenderDrawColor(renderer, 200, 0, 0, 255);
     SDL_RenderFillRect(renderer, &health_rect);
 
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Weißer Rahmen
+    // Outline (White)
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderDrawRect(renderer, &bar_background_rect);
 
-    // HINWEIS ZUM NAMEN: Da in dieser Umgebung keine SDL_ttf Unterstützung verfügbar ist,
-    // kann der Name des Gegners ("MUMIE") nicht als Text über der Leiste gerendert werden.
-
+    // --- DEBUG: Draw Hitbox relative to camera ---
     SDL_Color original_color;
     SDL_GetRenderDrawColor(renderer, &original_color.r, &original_color.g, &original_color.b, &original_color.a);
 
-    // Setzt die Farbe auf Rot
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); 
-    
-    // Zeichnet das Rechteck (die Hitbox)
-    SDL_RenderDrawRect(renderer, &enemy->rect);
-    
-    // Setzt die Farbe zurück auf die ursprüngliche Farbe (wichtig, um den Hintergrund/andere Elemente nicht zu beeinflussen)
+    SDL_Rect screen_hitbox = enemy->rect;
+    screen_hitbox.x -= camera_x;
+    screen_hitbox.y -= camera_y;
+
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    SDL_RenderDrawRect(renderer, &screen_hitbox);
+
     SDL_SetRenderDrawColor(renderer, original_color.r, original_color.g, original_color.b, original_color.a);
 }
 

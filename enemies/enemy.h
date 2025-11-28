@@ -23,7 +23,7 @@ Enemy enemy_init(SDL_Renderer *renderer, int initial_x, int initial_y);
 
 void enemy_update_animation(Enemy *enemy);
 void enemy_decrease_health(Enemy *enemy, int amount);
-void enemy_render(SDL_Renderer *renderer, Enemy *enemy);
+void enemy_render(SDL_Renderer *renderer, Enemy *enemy, int camera_x, int camera_y);
 void enemy_cleanup(Enemy *enemy);
 
 #endif // ENEMY_H

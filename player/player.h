@@ -17,6 +17,9 @@
 #define SCREEN_HEIGHT 272
 #define HURT_DURATION 300 // 300ms I-Frames / Hurt-Animation
 
+
+struct Map;
+
 // --- Struktur ---
 typedef struct {
     SDL_Texture *idle_frames[IDLE_FRAME_COUNT];
@@ -26,6 +29,10 @@ typedef struct {
     
     SDL_Rect rect;        // Die Kollisionsbox (die KLEINERE Hitbox)
     SDL_Rect attack_rect; // NEU: Rechteck für den Angriff (wird nur während der Attacke gesetzt)
+
+    float vel_x; // NEU
+    float vel_y; // NEU: Vertikale Geschwindigkeit
+    int on_ground; // NEU: Stehen wir auf dem Boden?
 
     int sprite_w;         // Volle Breite der Textur (zum Rendern)
     int sprite_h;         // Volle Höhe der Textur (zum Rendern)
@@ -50,11 +57,13 @@ typedef struct {
 
 // --- Funktionsprototypen ---
 Player player_init(SDL_Renderer *renderer);
-int player_handle_input(Player *player, const SceCtrlData *pad);
+int player_handle_input(Player *player, const SceCtrlData *pad, int map_width, int map_height);
+void player_handle_input_physics(Player *player, const SceCtrlData *pad);
 void player_update_animation(Player *player, int is_moving);
 void player_update_attack(Player *player); // NEU
 void player_decrease_health(Player *player, int amount);
-void player_render(SDL_Renderer *renderer, Player *player, int is_moving);
+void player_update_physics(Player *player, struct Map *map);
+void player_render(SDL_Renderer *renderer, Player *player, int is_moving, int camera_x, int camera_y);
 void player_cleanup(Player *player);
 
 #endif // PLAYER_H
