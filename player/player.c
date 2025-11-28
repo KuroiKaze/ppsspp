@@ -6,10 +6,10 @@
 #include "../map/map.h"
 
 // --- PFADE (Bitte prüfen, ob host0:/ bei dir nötig ist) ---
-#define PLAYER_IDLE_BASE_PATH "host0:/resources/Gothicvania Collection Files/Assets/Characters/PLAYABLE CHARACTERS/Cemetery Hero/Base/Sprites/hero-idle/hero-idle-"
-#define PLAYER_RUN_BASE_PATH "host0:/resources/Gothicvania Collection Files/Assets/Characters/PLAYABLE CHARACTERS/Cemetery Hero/Base/Sprites/hero-run/hero-run-"
-#define PLAYER_ATTACK_BASE_PATH "host0:/resources/Gothicvania Collection Files/Assets/Characters/PLAYABLE CHARACTERS/Cemetery Hero/Base/Sprites/hero-attack/frame"
-#define PLAYER_HURT_PATH "host0:/resources/Gothicvania Collection Files/Assets/Characters/PLAYABLE CHARACTERS/Cemetery Hero/Base/Sprites/hero-hurt/hero-hurt.png"
+#define PLAYER_IDLE_BASE_PATH "host0:/assets/player/hero-idle-"
+#define PLAYER_RUN_BASE_PATH "host0:/assets/player/hero-run-"
+#define PLAYER_ATTACK_BASE_PATH "host0:/assets/player/frame"
+#define PLAYER_HURT_PATH "host0:/assets/player/hero-hurt.png"
 
 extern SDL_Texture *load_texture(SDL_Renderer *renderer, const char *path);
 extern void debug_log(const char *format, ...);

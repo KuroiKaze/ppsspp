@@ -10,9 +10,8 @@ extern SDL_Texture *load_texture(SDL_Renderer *renderer, const char *path);
 #define HIT_BOX_SCALE_W 0.5f
 #define HIT_BOX_SCALE_H 0.8f
 
-#define ENEMY_IDLE_BASE_PATH "resources/Gothicvania Collection Files/Assets/Characters/NPC and ENEMIES/mummy-idle/Sprites/mummy-idle-"
-#define ENEMY_RUN_BASE_PATH  "resources/Gothicvania Collection Files/Assets/Characters/NPC and ENEMIES/mummy-walk/Sprites/mummy-walk-"
-
+#define ENEMY_IDLE_BASE_PATH "assets/enemy/mummy-idle-"
+#define ENEMY_RUN_BASE_PATH  "assets/enemy/mummy-walk-"
 
 
 #define ENEMY_ANIMATION_SPEED 150

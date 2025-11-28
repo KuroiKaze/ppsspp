@@ -3,10 +3,27 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "",
+    "activeFile": "map_level1.tmx",
     "expandedProjectPaths": [
     ],
     "fileStates": {
+        "map_level1.tmx": {
+            "scale": 2,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 443.75,
+                "y": 240.5
+            }
+        },
+        "map_level1.tmx#cemetery": {
+            "scaleInDock": 2
+        },
+        "map_level1.tmx#collision": {
+            "scaleInDock": 2
+        },
+        "map_level1.tmx#tower": {
+            "scaleInDock": 2
+        }
     },
     "last.exportedFilePath": "C:/Users/Max/CLionProjects/ppsspp/resources/maps",
     "last.imagePath": "C:/Users/Max/CLionProjects/ppsspp/resources/sprites",
@@ -17,9 +34,11 @@
     "map.tileWidth": 16,
     "map.width": 90,
     "openFiles": [
+        "map_level1.tmx"
     ],
     "project": "map_level1.tiled-project",
     "recentFiles": [
+        "map_level1.tmx"
     ],
     "tileset.embedInMap": true,
     "tileset.tileSize": {

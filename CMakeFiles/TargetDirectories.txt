@@ -1,3 +1,0 @@
-/Users/longnguyen/Downloads/ppsspp/ppsspp/CMakeFiles/retro_game.dir
-/Users/longnguyen/Downloads/ppsspp/ppsspp/CMakeFiles/edit_cache.dir
-/Users/longnguyen/Downloads/ppsspp/ppsspp/CMakeFiles/rebuild_cache.dir
