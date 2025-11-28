@@ -48,17 +48,17 @@ typedef struct {
     SDL_RendererFlip flip_direction; 
     Uint32 hurt_timer_end;      
     Uint32 attack_timer_end;    
-    Uint32 attack_cooldown_end; 
-    // NEU: Für Parallaxe-Scrolling in main.c
+    Uint32 attack_cooldown_end;
     int prev_x; // Vorherige X-Koordinate der Hitbox
     int current_x; // Aktuelle X-Koordinate der Hitbox
+    uint32_t prev_buttons;
 
 } Player;
 
 // --- Funktionsprototypen ---
 Player player_init(SDL_Renderer *renderer);
 int player_handle_input(Player *player, const SceCtrlData *pad, int map_width, int map_height);
-void player_handle_input_physics(Player *player, const SceCtrlData *pad);
+void player_handle_input_physics(Player *player, const SceCtrlData *pad, int map_width, int map_height);
 void player_update_animation(Player *player, int is_moving);
 void player_update_attack(Player *player); // NEU
 void player_decrease_health(Player *player, int amount);

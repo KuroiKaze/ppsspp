@@ -5,24 +5,52 @@
     },
     "activeFile": "cemetery.tmx",
     "expandedProjectPaths": [
+        "."
     ],
     "file.lastUsedOpenFilter": "Alle Dateien (*)",
     "fileStates": {
+        "": {
+            "scaleInDock": 1
+        },
         "cemetery.tmx": {
-            "scale": 4,
-            "selectedLayer": 0,
+            "scale": 3,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 167.875,
-                "y": 72.75
+                "x": 297.8333333333333,
+                "y": 183.33333333333334
             }
         },
+        "cemetery.tmx#bridge": {
+            "scaleInDock": 1
+        },
+        "cemetery.tmx#cemetery": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1
+        },
+        "cemetery.tmx#sprites_cemetery": {
+            "dynamicWrapping": true,
+            "scaleInDock": 1
+        },
+        "cemetery.tmx#tower": {
+            "dynamicWrapping": false
+        },
+        "cemetery.tmx#tower_reduced": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1
+        },
         "cemetery.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        },
+        "sprites_cemetery.tsx": {
+            "dynamicWrapping": true,
             "scaleInDock": 1,
             "scaleInEditor": 1
         }
     },
     "last.exportedFilePath": "C:/Users/Max/CLionProjects/ppsspp/resources/maps",
-    "last.imagePath": "C:/Users/Max/CLionProjects/ppsspp/resources/Gothicvania Collection Files/Assets/Environments/Cemetery/base/Layers",
+    "last.imagePath": "C:/Users/Max/CLionProjects/ppsspp/resources/Gothicvania Collection Files/Assets/Environments/Cemetery/Add-on 1/Layers",
     "map.height": 10,
     "map.lastUsedExportFilter": "JSON-Kartendateien (*.tmj *.json)",
     "map.lastUsedFormat": "tmx",
@@ -31,16 +59,20 @@
     "map.width": 20,
     "openFiles": [
         "cemetery.tsx",
-        "cemetery.tmx"
+        "cemetery.tmx",
+        "sprites_cemetery.tsx"
     ],
     "project": "cemetery.tiled-project",
     "recentFiles": [
         "cemetery.tsx",
+        "sprites_cemetery.tsx",
         "cemetery.tmx"
     ],
+    "tileset.embedInMap": true,
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {
         "height": 16,
         "width": 16
-    }
+    },
+    "tileset.type": 0
 }
