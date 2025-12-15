@@ -3,8 +3,12 @@
 #include "../enemies/mummy/mummy.h"
 #include "../enemies/slime/slime.h"
 #include "../ui/ui.h"
+#include "../bgm/bgmHandler.h"
 
 #define MAX_ENEMIES 5
+
+BGMHandler bgm;
+SFX sfx;
 
 extern void debug_log(const char *format, ...);
 
@@ -20,6 +24,7 @@ bool all_enemies_dead(Level* level) {
 
 void level1_init(Level* level, SDL_Renderer* renderer, Player* player) {
     if (!level || !player) return;
+    sfx_init();
 
     // Player Pointer setzen
     level->player = player;
@@ -46,6 +51,14 @@ void level1_init(Level* level, SDL_Renderer* renderer, Player* player) {
     Slime* slime = malloc(sizeof(Slime));
     *slime = slime_init(renderer, 500, 100);
     level->enemies[1] = &slime->base;
+
+    if (!bgm_init()) {
+        debug_log("BGM konnte nicht initialisiert werden!\n");
+    }
+    bgm_play(&bgm, "host0:/resources/music/medieval-ambient-236809.wav", -1); // -1 = loop
+    // Initialisierung
+    Mix_VolumeChunk(mummy->base.entity.grunt_sfx, 10); // Lautstärke 0-128
+    mummy->base.entity.grunt_sfx_channel = Mix_PlayChannel(-1, mummy->base.entity.grunt_sfx, -1); // -1 = unendlich loopen
 
     if (TTF_Init() == -1) {
         debug_log("TTF_Init Error: %s\n", TTF_GetError());
@@ -95,10 +108,11 @@ void level_update(Level* level, SceCtrlData* pad, SDL_Renderer* renderer) {
     player_update_attack(player);
 
     for (int i = 0; i < level->enemy_count; i++) {
-        enemy_take_damage_from_player(level->enemies[i], player->attack_rect, 10);
-
-        enemy_update(level->enemies[i], player, &level->map);
-        enemy_handle_attack(level->enemies[i], player);
+        Enemy* e = level->enemies[i];
+    
+        enemy_take_damage_from_player(e, player->attack_rect, 10);
+        enemy_update(e, player, &level->map);
+        enemy_handle_attack(e, player);
     }
 
     if (all_enemies_dead(level) && !level->chest_spawned) {

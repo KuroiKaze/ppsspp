@@ -79,6 +79,7 @@ void enemy_render(SDL_Renderer *renderer, Enemy *enemy, int camera_x, int camera
     if (e->is_dead) return;
 
     SDL_Texture *current_texture = NULL;
+    sfx_play(enemy->entity.grunt_sfx, -1);
 
     if (e->is_dying && e->death.count > 0) {
         current_texture = e->death.frames[e->current_death_frame];

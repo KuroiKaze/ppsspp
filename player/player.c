@@ -70,6 +70,8 @@ Player player_init(SDL_Renderer *renderer) {
     e->on_ground = 0;
     e->flip_direction = SDL_FLIP_NONE;
     e->last_time = SDL_GetTicks();
+    //e->attack_sfx = Mix_LoadWAV("host0:/resources/sfx/blade_draw-99885.wav");
+    //if (!e->attack_sfx) goto fail;
 
     return player;
 
@@ -120,6 +122,7 @@ void player_update_attack(Player *player) {
     Uint32 t = SDL_GetTicks();
     if (t >= player->attack_timer_end) {
         player->attack_rect = (SDL_Rect){0,0,0,0};
+        player->attack_sfx_played = false; // Reset für nächsten Angriff
         return;
     }
 
@@ -131,6 +134,11 @@ void player_update_attack(Player *player) {
 
     // Attack hitbox berechnen
     if (player->current_attack_frame == 1) {
+        if (!player->attack_sfx_played) {
+            sfx_play(player->entity.attack_sfx, 0); // nur einmal abspielen
+            player->attack_sfx_played = true;
+        }
+
         if (player->entity.flip_direction == SDL_FLIP_NONE) {
             player->attack_rect.x = player->entity.rect.x + player->entity.rect.w - ATTACK_OVERLAP;
         } else {
@@ -139,6 +147,7 @@ void player_update_attack(Player *player) {
         player->attack_rect.y = player->entity.rect.y + player->entity.rect.h / 2 - ATTACK_HITBOX_HEIGHT/2 + ATTACK_HITBOX_OFFSET_Y;
         player->attack_rect.w = ATTACK_HITBOX_WIDTH;
         player->attack_rect.h = ATTACK_HITBOX_HEIGHT;
+
     } else {
         player->attack_rect = (SDL_Rect){0,0,0,0};
     }

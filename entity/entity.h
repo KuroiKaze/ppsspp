@@ -3,6 +3,7 @@
 
 #include <SDL.h>
 #include "spriteFramesArray.h"
+#include "../bgm/bgmHandler.h"
 
 typedef struct {
     SDL_Rect rect;
@@ -37,6 +38,10 @@ typedef struct {
     int current_death_frame;
     Uint32 death_last_time;
     Uint8 alpha; 
+    Mix_Chunk* attack_sfx;
+    Mix_Chunk* grunt_sfx;
+    int grunt_sfx_channel;
+    int attack_sfx_channel;
 
 } Entity;
 

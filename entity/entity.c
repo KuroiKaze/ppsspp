@@ -90,6 +90,8 @@ void entity_cleanup(Entity *e){
     entity_free_frames(&e->attack);
     entity_free_frames(&e->hurt);
     entity_free_frames(&e->jump);
+    sfx_cleanup(e->attack_sfx);
+    sfx_cleanup(e->grunt_sfx);
 }
 
 void entity_update_physics(Entity *e, struct Map *map, float gravity, float max_fall_speed){
@@ -153,6 +155,9 @@ void entity_render(SDL_Renderer *renderer, Entity *e, SDL_Texture *current_textu
 }
 
 void entity_update_death(Entity *e) {
+    Mix_HaltChannel(e->grunt_sfx_channel);
+    e->grunt_sfx_channel = -1;
+
     if (e->death.count == 0) {
         e->is_dead = 1;
         return;

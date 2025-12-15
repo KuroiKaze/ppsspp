@@ -25,6 +25,8 @@ typedef struct Player {
     int current_attack_frame;
     Uint32 prev_buttons;
     SDL_Rect attack_rect;
+    bool attack_sfx_played;
+
 } Player;
 
 Player player_init(SDL_Renderer *renderer);
