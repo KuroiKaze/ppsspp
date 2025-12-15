@@ -30,6 +30,13 @@ typedef struct {
     SpriteFrameArray jump;
     SpriteFrameArray attack;
     SpriteFrameArray hurt;
+    SpriteFrameArray death;
+
+    int is_dying;
+    int is_dead;
+    int current_death_frame;
+    Uint32 death_last_time;
+    Uint8 alpha; 
 
 } Entity;
 
@@ -43,4 +50,6 @@ void entity_cleanup(Entity *e);
 void entity_update_physics(Entity *e, struct Map *map, float gravity, float max_fall_speed);
 void entity_update_animation(Entity *e, int is_moving, Uint32 animation_speed);
 void entity_render(SDL_Renderer *renderer, Entity *e, SDL_Texture *current_texture, int camera_x, int camera_y);
+void entity_update_death(Entity *e);
+
 #endif

@@ -10,15 +10,20 @@ extern int map_get_floor_height(struct Map *map, int x, int y);
 extern int map_is_solid(struct Map *map, int x, int y);
 extern void debug_log(const char *format, ...);
 
-
-
 void enemy_cleanup(Enemy *enemy) {
     entity_cleanup(&enemy->entity);
 }
 
 void enemy_update(Enemy *enemy, Player *player, struct Map *map) {
     Entity *e = &enemy->entity;
-    if (e->health <= 0) return;
+    if (enemy->entity.is_dying) {
+        entity_update_death(&enemy->entity);
+        return;
+    }
+
+    if (enemy->entity.is_dead) {
+        return;
+    }
 
     // --- 1. AI LOGIK ---
     float p_center_x = player->entity.rect.x + player->entity.rect.w / 2.0f;
@@ -70,38 +75,52 @@ void enemy_update(Enemy *enemy, Player *player, struct Map *map) {
 }
 
 void enemy_render(SDL_Renderer *renderer, Enemy *enemy, int camera_x, int camera_y) {
-    if (enemy->entity.health <= 0) return; // <-- Wert prüfen, nicht Adresse
-
     Entity *e = &enemy->entity;
+    if (e->is_dead) return;
+
     SDL_Texture *current_texture = NULL;
 
-    if (enemy->is_moving && e->run.count > 0)
+    if (e->is_dying && e->death.count > 0) {
+        current_texture = e->death.frames[e->current_death_frame];
+        SDL_SetTextureAlphaMod(current_texture, e->alpha);
+    }
+    else if (enemy->is_moving && e->run.count > 0) {
         current_texture = e->run.frames[e->current_run_frame];
-    else if (!enemy->is_moving && e->idle.count > 0)
+    }
+    else if (e->idle.count > 0) {
         current_texture = e->idle.frames[e->current_idle_frame];
+    }
 
     entity_render(renderer, e, current_texture, camera_x, camera_y);
 
     // Health Bar
-    int bar_x = (e->rect.x - e->offset_x + e->sprite_w / 2 - ENEMY_BAR_W / 2) - camera_x;
-    int bar_y = (e->rect.y - ENEMY_BAR_H - ENEMY_BAR_OFFSET_Y) - camera_y;
+    if (!e->is_dying && e->health > 0) {
+        int bar_x = (e->rect.x - e->offset_x + e->sprite_w / 2 - ENEMY_BAR_W / 2) - camera_x;
+        int bar_y = (e->rect.y - ENEMY_BAR_H - ENEMY_BAR_OFFSET_Y) - camera_y;
 
-    SDL_Rect bar_bg = {bar_x, bar_y, ENEMY_BAR_W, ENEMY_BAR_H};
-    SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
-    SDL_RenderFillRect(renderer, &bar_bg);
+        SDL_Rect bar_bg = {bar_x, bar_y, ENEMY_BAR_W, ENEMY_BAR_H};
+        SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
+        SDL_RenderFillRect(renderer, &bar_bg);
 
-    float ratio = (float)e->health / ENEMY_MAX_HEALTH;
-    SDL_Rect bar_hp = {bar_x, bar_y, (int)(ENEMY_BAR_W * ratio), ENEMY_BAR_H};
-    SDL_SetRenderDrawColor(renderer, 200, 0, 0, 255);
-    SDL_RenderFillRect(renderer, &bar_hp);
+        float ratio = (float)e->health / ENEMY_MAX_HEALTH;
+        SDL_Rect bar_hp = {bar_x, bar_y, (int)(ENEMY_BAR_W * ratio), ENEMY_BAR_H};
+        SDL_SetRenderDrawColor(renderer, 200, 0, 0, 255);
+        SDL_RenderFillRect(renderer, &bar_hp);
 
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDL_RenderDrawRect(renderer, &bar_bg);
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        SDL_RenderDrawRect(renderer, &bar_bg);
+    }
 }
 
 void enemy_decrease_health(Enemy *enemy, int amount) {
     enemy->entity.health -= amount;
-    if (enemy->entity.health < 0) enemy->entity.health = 0;
+    if (enemy->entity.health <= 0 && !enemy->entity.is_dying) {
+    enemy->entity.is_dying = 1;
+    enemy->entity.current_death_frame = 0;
+    enemy->entity.alpha = 255;
+    enemy->entity.vel_x = 0;
+    enemy->entity.vel_y = 0;
+}
 }
 
 void enemy_handle_attack(Enemy *enemy, Player *player) {
@@ -136,10 +155,16 @@ void enemy_handle_attack(Enemy *enemy, Player *player) {
 }
 
 void enemy_take_damage_from_player(Enemy *enemy, SDL_Rect player_attack_rect, int damage) {
-    if (enemy->entity.health <= 0) return;
+    if (enemy->entity.is_dead) return;
 
     if (SDL_HasIntersection(&player_attack_rect, &enemy->entity.rect)) {
         enemy->entity.health -= damage;
-        if (enemy->entity.health < 0) enemy->entity.health = 0;
+        if (enemy->entity.health <= 0 && !enemy->entity.is_dying) {
+            enemy->entity.is_dying = 1;
+            enemy->entity.current_death_frame = 0;
+            enemy->entity.alpha = 255;
+            enemy->entity.vel_x = 0;
+            enemy->entity.vel_y = 0;
+        }
     }
 }

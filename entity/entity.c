@@ -151,3 +151,28 @@ void entity_render(SDL_Renderer *renderer, Entity *e, SDL_Texture *current_textu
 
     SDL_RenderCopyEx(renderer, current_texture, NULL, &render_rect, 0.0, NULL, e->flip_direction);
 }
+
+void entity_update_death(Entity *e) {
+    if (e->death.count == 0) {
+        e->is_dead = 1;
+        return;
+    }
+
+    Uint32 now = SDL_GetTicks();
+    if (now - e->death_last_time < 100) return; // speed
+
+    e->death_last_time = now;
+
+    e->current_death_frame++;
+
+    // Fade out
+    if (e->alpha > 10)
+        e->alpha -= 10;
+    else
+        e->alpha = 0;
+
+    if (e->current_death_frame >= e->death.count) {
+        e->is_dead = 1;
+        e->is_dying = 0;
+    }
+}
