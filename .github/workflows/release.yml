@@ -72,8 +72,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Benötigt die 'contents: write' Berechtigung
         with:
-          tag_name: ${{ github.ref }} # Verwendet den ausgelösten Tag (z.B. refs/tags/v1.0.0)
-          release_name: Release ${{ github.ref_name }} # Name des Releases (z.B. v1.0.0)
+          tag_name: ${{ env.RELEASE_NAME }} # oder nur ${{ github.ref_name }}
+          release_name: Release ${{ env.RELEASE_NAME }}
           draft: false
           prerelease: false
 
