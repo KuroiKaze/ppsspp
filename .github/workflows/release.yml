@@ -1,77 +1,79 @@
-name: PSP Homebrew Build
+name: 🎮 PSP Homebrew Release
 
-# 1. Trigger: Startet den Workflow bei jedem Push auf dem 'main' Branch und bei Pull Requests
+# 1. Trigger: Wird nur ausgelöst, wenn ein neuer Tag (z.B. v1.0.0) gepusht wird.
 on:
   push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+    tags:
+      - 'v*' # Matcht Tags wie v1.0.0, v2.5
 
-# 2. Jobs: Die auszuführenden Aufgaben
+# Standard-Berechtigungen für GitHub-Actions (Release-Erstellung benötigt 'contents: write')
+permissions:
+  contents: write
+
 jobs:
-  build:
-    # Der Runner, auf dem das Docker Image ausgeführt wird
+  build_and_release:
     runs-on: ubuntu-latest
 
-    # 3. Schritte: Die einzelnen Aktionen
     steps:
       # Step 1: Repository klonen
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          # Optional: Wenn Ihr Projekt Submodule verwendet (z.B. psp-libs)
           submodules: true
 
-      # Step 2: Docker Image pullen (pspdev/pspdev:latest)
-      - name: Pull PSPDEV Docker Image
-        # Docker wird das Image bei Bedarf automatisch pullen, aber dieser Schritt ist optional 
-        # und dient der Klarheit, dass das Image bereitsteht.
-        run: docker pull pspdev/pspdev:latest
-
-      # Step 3: PSPDEV Umgebung initialisieren und Build ausführen
-      - name: Configure and Build PSP Project
-        # Wir verwenden docker run, um in das Container-Verzeichnis zu springen
-        # und dort alle Kompilierungsschritte auszuführen.
+      # Step 2: Projekt kompilieren und EBOOT.PBP erstellen (im Docker-Container)
+      - name: Build EBOOT.PBP using PSPDEV Docker
         run: |
-          # Führe den Container aus:
-          # -ti: Interaktiver Pseudo-TTY (gut für die Shell-Umgebung)
-          # -v $PWD:/source: Bindet das lokale Repository ($PWD) an das Verzeichnis /source im Container
-          # pspdev/pspdev:latest: Das zu verwendende Image
-          # /bin/bash -c "..." : Startet Bash im Container und führt die folgenden Befehle aus
-          docker run -ti -v $PWD:/source pspdev/pspdev:latest /bin/bash -c "
-            # In das Quellverzeichnis wechseln
-            cd /source
-
-            # Umgebungsvariable PSPDEV setzen (wird oft im Container benötigt)
+          BUILD_DIR="build_pbp"
+          
+          # Führt den Container aus und kompiliert das Projekt
+          docker run -v $PWD:/source pspdev/pspdev:latest /bin/bash -c "
+            # Setze PSPDEV (oft notwendig)
             export PSPDEV=/usr/local/pspdev
-
-            # --- Projekt spezifische Build-Schritte hier einfügen ---
-            # Beispiel für ein cmake-basiertes Projekt:
-
-            # 1. Build-Verzeichnis erstellen und wechseln
-            mkdir build
-            cd build
-
-            # 2. CMake ausführen (generiert Makefiles)
-            # Fügen Sie hier Ihre spezifischen Build-Optionen hinzu, z.B. -DBUILD_PRX=1
-            psp-cmake ..
-
-            # 3. Kompilieren (nutzt alle verfügbaren Kerne)
-            make -j$(nproc)
+            cd /source
             
-            # 4. (Optional) Dateien zurückkopieren/speichern
-            # Wenn Sie die kompilierten Dateien (z.B. EBOOT.PBP) außerhalb des 'build'-Ordners benötigen
-            # cp <Pfad zur EBOOT.PBP> /source/
+            # 1. Build-Verzeichnis erstellen und wechseln
+            mkdir -p $BUILD_DIR
+            cd $BUILD_DIR
+            
+            # 2. CMake Konfiguration
+            # Wir verwenden KEIN -DBUILD_PRX=1, um die EBOOT.PBP zu erhalten.
+            psp-cmake ..
+            
+            # 3. Kompilieren
+            make -j$(nproc)
           "
+        # Die EBOOT.PBP liegt nun im Verzeichnis build_pbp
 
-      # Step 4: (Optional) Hochladen des Build-Artefakts
-      - name: Upload Artifact
+      # Step 3: Kompilierte Datei als Artefakt hochladen (optional, nur zur Überprüfung)
+      - name: Upload EBOOT.PBP Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: psp-build-output
-          # Passen Sie den Pfad an, wo Ihre EBOOT.PBP/PRX liegt
-          path: build/EBOOT.PBP
-          # oder
-          # path: /source/*.prx
+          name: ${{ github.event.repository.name }}-EBOOT.PBP
+          path: build_pbp/EBOOT.PBP # Pfad zu Ihrer generierten PBP-Datei
+
+      # Step 4: GitHub Release erstellen
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Benötigt die 'contents: write' Berechtigung
+        with:
+          tag_name: ${{ github.ref }} # Verwendet den ausgelösten Tag (z.B. refs/tags/v1.0.0)
+          release_name: Release ${{ github.ref_name }} # Name des Releases (z.B. v1.0.0)
+          draft: false
+          prerelease: false
+
+      # Step 5: EBOOT.PBP an das Release anhängen
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # ID des erstellten Releases aus Step 4
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          # Pfad zur Datei, die angehängt werden soll (WICHTIG: korrekten Namen verwenden)
+          asset_path: build_pbp/EBOOT.PBP
+          # Dateiname, wie er im Release angezeigt wird
+          asset_name: ${{ github.event.repository.name }}_${{ github.ref_name }}.PBP
+          asset_content_type: application/octet-stream
