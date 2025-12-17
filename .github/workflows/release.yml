@@ -1,10 +1,19 @@
 name: 🎮 PSP Homebrew Release
 
-# 1. Trigger: Wird nur ausgelöst, wenn ein neuer Tag (z.B. v1.0.0) gepusht wird.
+# NEU: Der manuelle Start-Trigger
 on:
+  # Erlaubt das Starten über die GitHub Actions UI
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag Name for the Release (e.g., v1.0.3)'
+        required: true
+        default: 'dev-build' # Optionaler Standardwert für Testläufe
+
+  # Der ursprüngliche Trigger (beibehalten)
   push:
     tags:
-      - 'v*' # Matcht Tags wie v1.0.0, v2.5
+      - 'v*'
 
 # Standard-Berechtigungen für GitHub-Actions (Release-Erstellung benötigt 'contents: write')
 permissions:
