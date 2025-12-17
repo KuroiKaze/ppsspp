@@ -30,10 +30,14 @@ jobs:
         with:
           submodules: true
 
-      # Step 2: Projekt kompilieren und EBOOT.PBP erstellen (im Docker-Container)
+# Step 2: Projekt kompilieren und EBOOT.PBP erstellen (im Docker-Container)
       - name: Build EBOOT.PBP using PSPDEV Docker
         run: |
           BUILD_DIR="build_pbp"
+
+          # *** NEU: Bereinigung des lokalen Caches vor dem Build ***
+          echo "Cleaning up local CMake cache..."
+          rm -rf CMakeCache.txt CMakeFiles
           
           # Führt den Container aus und kompiliert das Projekt
           docker run -v $PWD:/source pspdev/pspdev:latest /bin/bash -c "
@@ -46,7 +50,7 @@ jobs:
             cd $BUILD_DIR
             
             # 2. CMake Konfiguration
-            # Wir verwenden KEIN -DBUILD_PRX=1, um die EBOOT.PBP zu erhalten.
+            # psp-cmake wird nun sauber im build_pbp Ordner gestartet
             psp-cmake ..
             
             # 3. Kompilieren
