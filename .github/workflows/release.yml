@@ -1,101 +1,77 @@
-# Workflow-Name, sichtbar im GitHub Actions Tab
-name: 🎮 PSP EBOOT.PBP Release erstellen
+name: PSP Homebrew Build
 
-# Der Workflow wird nur bei Pushes auf dem main-Branch ausgelöst.
+# 1. Trigger: Startet den Workflow bei jedem Push auf dem 'main' Branch und bei Pull Requests
 on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
+# 2. Jobs: Die auszuführenden Aufgaben
 jobs:
-  # Job 1: Baut das PSP-Projekt und erstellt die EBOOT.PBP
-  build_psp:
-    # Führt den Job im PSP Toolchain Container aus
+  build:
+    # Der Runner, auf dem das Docker Image ausgeführt wird
     runs-on: ubuntu-latest
-    container: ghcr.io/pspdev/psptoolchain:latest
-    
+
+    # 3. Schritte: Die einzelnen Aktionen
     steps:
-      - name: Code auschecken
+      # Step 1: Repository klonen
+      - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # Optional: Wenn Ihr Projekt Submodule verwendet (z.B. psp-libs)
+          submodules: true
 
-      - name: Umgebungsvariablen setzen
-        run: |
-          # Stellt sicher, dass die Umgebungsvariablen für das PSPDEV-Toolchain korrekt gesetzt sind
-          export PSPDEV=/usr/local/pspdev
-          export PATH=$PATH:$PSPDEV/bin
+      # Step 2: Docker Image pullen (pspdev/pspdev:latest)
+      - name: Pull PSPDEV Docker Image
+        # Docker wird das Image bei Bedarf automatisch pullen, aber dieser Schritt ist optional 
+        # und dient der Klarheit, dass das Image bereitsteht.
+        run: docker pull pspdev/pspdev:latest
 
-      - name: Installiere CMake
+      # Step 3: PSPDEV Umgebung initialisieren und Build ausführen
+      - name: Configure and Build PSP Project
+        # Wir verwenden docker run, um in das Container-Verzeichnis zu springen
+        # und dort alle Kompilierungsschritte auszuführen.
         run: |
-          # Der PSPDEV-Container basiert typischerweise auf Alpine Linux.
-          # Wir installieren cmake, da es nicht standardmäßig enthalten ist.
-          apk update
-          apk add cmake
+          # Führe den Container aus:
+          # -ti: Interaktiver Pseudo-TTY (gut für die Shell-Umgebung)
+          # -v $PWD:/source: Bindet das lokale Repository ($PWD) an das Verzeichnis /source im Container
+          # pspdev/pspdev:latest: Das zu verwendende Image
+          # /bin/bash -c "..." : Startet Bash im Container und führt die folgenden Befehle aus
+          docker run -ti -v $PWD:/source pspdev/pspdev:latest /bin/bash -c "
+            # In das Quellverzeichnis wechseln
+            cd /source
 
-      - name: PSP-Projekt bauen (mit oder ohne custom Skript)
-        run: |
-          # --- Priorisiere eigenes Build-Skript ---
-          if [ -f build-psp.sh ]; then
-            echo "Führe benutzerdefiniertes PSP-Build-Skript (./build-psp.sh) aus."
-            chmod +x build-psp.sh
-            ./build-psp.sh
+            # Umgebungsvariable PSPDEV setzen (wird oft im Container benötigt)
+            export PSPDEV=/usr/local/pspdev
+
+            # --- Projekt spezifische Build-Schritte hier einfügen ---
+            # Beispiel für ein cmake-basiertes Projekt:
+
+            # 1. Build-Verzeichnis erstellen und wechseln
+            mkdir build
+            cd build
+
+            # 2. CMake ausführen (generiert Makefiles)
+            # Fügen Sie hier Ihre spezifischen Build-Optionen hinzu, z.B. -DBUILD_PRX=1
+            psp-cmake ..
+
+            # 3. Kompilieren (nutzt alle verfügbaren Kerne)
+            make -j$(nproc)
             
-            # WICHTIG: Das custom Skript MUSS die EBOOT.PBP in das Verzeichnis ./psp-build/ legen!
-            
-          # --- Fallback auf standard CMake-Build ---
-          else
-            echo "Kein benutzerdefiniertes Skript gefunden. Führe Standard-CMake-Build aus."
-            
-            # Stellt sicher, dass das Build-Verzeichnis sauber ist, um Fehler zu vermeiden.
-            rm -rf psp-build
-            mkdir psp-build
-            cd psp-build
-            
-            # Annahme: Toolchain-Datei liegt im PSPDEV-Pfad
-            TOOLCHAIN_FILE="${PSPDEV}/share/pspsdk/cmake/Toolchain-psp.cmake"
-            
-            # Konfiguriere CMake unter Verwendung der PSP Toolchain
-            cmake .. -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE} -DPSP=1
-            
-            # Starte den Build-Prozess und nutze alle verfügbaren Kerne
-            make -j $(getconf _NPROCESSORS_ONLN)
-            
-            # Die erstellte EBOOT.PBP liegt nun im 'psp-build'-Verzeichnis
-          fi
-          
-      - name: EBOOT.PBP als Artefakt hochladen
+            # 4. (Optional) Dateien zurückkopieren/speichern
+            # Wenn Sie die kompilierten Dateien (z.B. EBOOT.PBP) außerhalb des 'build'-Ordners benötigen
+            # cp <Pfad zur EBOOT.PBP> /source/
+          "
+
+      # Step 4: (Optional) Hochladen des Build-Artefakts
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          # Name des Artefakts, das im nächsten Job heruntergeladen wird
-          name: psp-release-artifact
-          path: psp-build/EBOOT.PBP # Pfad wurde aktualisiert
-          retention-days: 1 # Temporäre Speicherung
-
-  # Job 2: Erstellt das Release und lädt die EBOOT.PBP hoch
-  create_release:
-    # Stellt sicher, dass dieses Release nur nach erfolgreichem Build startet
-    needs: build_psp
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Build Artefakt herunterladen
-        uses: actions/download-artifact@v4
-        with:
-          name: psp-release-artifact
-          path: ./release_assets
-
-      - name: Kurzen SHA für Tag und Release-Name ermitteln
-        id: slug
-        run: echo "sha8=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_OUTPUT
-
-      - name: GitHub Release erstellen
-        uses: softprops/action-gh-release@v1
-        with:
-          # Verwendet den kurzen Commit-SHA als eindeutiges Tag
-          tag_name: v${{ steps.slug.outputs.sha8 }}
-          name: PSP Build ${{ steps.slug.outputs.sha8 }}
-          body: |
-            Automatisch erstelltes Release von Commit ${{ github.sha }}.
-            
-          
-          # Hängt die EBOOT.PBP als Asset an das Release an
-          files: ./release_assets/EBOOT.PBP
+          name: psp-build-output
+          # Passen Sie den Pfad an, wo Ihre EBOOT.PBP/PRX liegt
+          path: build/EBOOT.PBP
+          # oder
+          # path: /source/*.prx
