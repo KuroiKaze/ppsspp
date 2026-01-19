@@ -115,35 +115,25 @@ void level_load(Level* level, SDL_Renderer* renderer, Player* player, const char
 
     level_scan_entities(level, renderer);
 
-    // Chest (Logic remains separate for now unless you add SHAPE_CHEST)
+// Chest
     level->chest_spawned = false;
     level->loot_chest = chest_init(renderer, "host0:/resources/sprites/chest-", 400, 375);
 
-    // Load Font
-    if (!level->font) {
-        TTF_Init();
-        level->font = TTF_OpenFont("host0:/resources/fonts/ARIAL.ttf", 14);
+    // --- NEW: Load Text as Images ---
+    // 1. Load Door Text
+    level->txt_door_texture = IMG_LoadTexture(renderer, "host0:/resources/ui/text_door.png");
+    if (level->txt_door_texture) {
+        SDL_QueryTexture(level->txt_door_texture, NULL, NULL, &level->txt_door_w, &level->txt_door_h);
+    } else {
+        debug_log("Failed to load door text!");
     }
 
-    // Pre-render Textures (Generate ONCE)
-    if (level->font) {
-        SDL_Color yellow = {255, 255, 0, 255};
-        SDL_Surface* surf_door = TTF_RenderText_Solid(level->font, "Press UP to Enter", yellow);
-        if (surf_door) {
-            level->txt_door_texture = SDL_CreateTextureFromSurface(renderer, surf_door);
-            level->txt_door_w = surf_door->w;
-            level->txt_door_h = surf_door->h;
-            SDL_FreeSurface(surf_door);
-        }
-
-        SDL_Color white = {255, 255, 255, 255};
-        SDL_Surface* surf_chest = TTF_RenderText_Solid(level->font, "Press SQUARE to Collect", white);
-        if (surf_chest) {
-            level->txt_chest_texture = SDL_CreateTextureFromSurface(renderer, surf_chest);
-            level->txt_chest_w = surf_chest->w;
-            level->txt_chest_h = surf_chest->h;
-            SDL_FreeSurface(surf_chest);
-        }
+    // 2. Load Chest Text
+    level->txt_chest_texture = IMG_LoadTexture(renderer, "host0:/resources/ui/text_chest.png");
+    if (level->txt_chest_texture) {
+        SDL_QueryTexture(level->txt_chest_texture, NULL, NULL, &level->txt_chest_w, &level->txt_chest_h);
+    } else {
+        debug_log("Failed to load chest text!");
     }
 
 }
@@ -230,12 +220,14 @@ void level_render(Level* level, SDL_Renderer* renderer, int camera_x, int camera
     int is_moving = (player->entity.vel_x != 0);
     player_render(renderer, player, is_moving, camera_x, camera_y);
 
-    // 5. Chest & Interaction UI
+// 5. Chest & Interaction UI
     if (level->chest_spawned && !level->loot_chest.collected) {
         chest_render(renderer, &level->loot_chest, camera_x, camera_y);
 
         if (chest_check_collision(&level->loot_chest, player->entity.rect)) {
+            // Check if texture exists before drawing
             if (level->txt_chest_texture) {
+                // Center text above chest
                 int visual_chest_w = level->loot_chest.rect.w * 1.5;
                 int text_x = (level->loot_chest.rect.x - camera_x) + (visual_chest_w / 2) - (level->txt_chest_w / 2);
                 int text_y = (level->loot_chest.rect.y - camera_y) - level->txt_chest_h - 5;
@@ -249,7 +241,7 @@ void level_render(Level* level, SDL_Renderer* renderer, int camera_x, int camera
     // 6. UI Health
     ui_render_health_bar(renderer, player->entity.health);
 
-    // 7. Door Indicator
+// 7. Door Indicator
     int check_x = player->entity.rect.x + (player->entity.rect.w / 2);
     int check_y = player->entity.rect.y + player->entity.rect.h - 8;
 
@@ -264,7 +256,6 @@ void level_render(Level* level, SDL_Renderer* renderer, int camera_x, int camera
         }
     }
 }
-
 
 void level_reset(Level* level) {
     if (!level || !level->player) return;
@@ -296,6 +287,7 @@ void level_cleanup(Level* level) {
     free(level->enemies);
     level->enemies = NULL;
 
+
     if (level->txt_door_texture) {
         SDL_DestroyTexture(level->txt_door_texture);
         level->txt_door_texture = NULL;
@@ -304,12 +296,6 @@ void level_cleanup(Level* level) {
         SDL_DestroyTexture(level->txt_chest_texture);
         level->txt_chest_texture = NULL;
     }
-
-    if (level->font) {
-        TTF_CloseFont(level->font);
-        level->font = NULL;
-    }
-    TTF_Quit();
 
 
     map_cleanup(&level->map);
