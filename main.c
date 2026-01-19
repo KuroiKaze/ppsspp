@@ -9,6 +9,7 @@
 
 #include "player/player.h"
 #include "level/level.h"
+#include "level/levelHandler.h"
 
 #define SCREEN_WIDTH 480
 #define SCREEN_HEIGHT 272
@@ -74,8 +75,7 @@ int main(int argc, char *argv[])
     SDL_Renderer *renderer = NULL;
     Player player = {0};
 
-    int game_state = 0; // 0 = SPIELEN, 1 = GAME OVER
-    int current_level = 0;
+    int game_state = 0; // 0 = PLAYING, 1 = GAME OVER
 
     setup_callbacks();
     sceCtrlSetSamplingCycle(0);
@@ -102,14 +102,11 @@ int main(int argc, char *argv[])
 
     player = player_init(renderer);
 
-    // --- Level initialisieren ---
-    Level levels[2]; // z.B. 2 Levels
-    debug_log("Loading Map Level 1...");
-    level1_init(&levels[0], renderer, &player);
-    // level2_init(&levels[1], renderer);
+    // Initialize the Handler
+    LevelHandler level_handler = level_handler_init(renderer, &player);
 
     SceCtrlData pad;
-    
+
     // --- GAME LOOP ---
     while (running) {
         SDL_Event event;
@@ -119,25 +116,27 @@ int main(int argc, char *argv[])
         if (pad.Buttons & PSP_CTRL_SELECT) running = 0;
 
         int is_moving = (player.entity.vel_x != 0);
-        Level *level = &levels[current_level];
+
+        Level *level = &level_handler.current_level;
 
         int map_pixel_width = level->map.tiled_map->width * level->map.tiled_map->tilewidth;
         int map_pixel_height = level->map.tiled_map->height * level->map.tiled_map->tileheight;
 
-
         int camera_x = player.entity.rect.x + (player.entity.rect.w / 2) - (SCREEN_WIDTH / 2);
         int camera_y = player.entity.rect.y + (player.entity.rect.h / 2) - (SCREEN_HEIGHT / 2);
+
         if (camera_x < 0) camera_x = 0;
         if (camera_y < 0) camera_y = 0;
         if (camera_x > map_pixel_width - SCREEN_WIDTH) camera_x = map_pixel_width - SCREEN_WIDTH;
         if (camera_y > map_pixel_height - SCREEN_HEIGHT) camera_y = map_pixel_height - SCREEN_HEIGHT;
-    
+
         if (game_state == 0)
         {
-            level_update(level, &pad, renderer);
+            // Use the handler to update (checks for doors, enemies, etc.)
+            level_handler_update(&level_handler, &pad);
 
-            // Spieler stirbt, wenn er unter Map fällt
-            if (player.entity.rect.y > level->map.tiled_map->height * 16 + 100)
+            // Fall Death check
+            if (player.entity.rect.y > map_pixel_height + 100)
             {
                 player_decrease_health(&player, 1000);
             }
@@ -147,7 +146,9 @@ int main(int argc, char *argv[])
         {
             if (pad.Buttons & PSP_CTRL_START)
             {
-                level_reset(level);
+                // Reset using the handler's current level
+                level_reset(&level_handler.current_level);
+                player.entity.health = PLAYER_MAX_HEALTH;
                 game_state = 0;
             }
         }
@@ -157,22 +158,23 @@ int main(int argc, char *argv[])
         SDL_RenderClear(renderer);
         if (game_state == 0)
         {
-            level_render(level, renderer, camera_x, camera_y);
+            // Render via Handler
+            level_handler_render(&level_handler, camera_x, camera_y);
         }
         else
         {
             SDL_SetRenderDrawColor(renderer, 100, 0, 0, 255);
             SDL_RenderClear(renderer);
+            // Render player manually on Game Over screen if needed
             player_render(renderer, &player, is_moving, camera_x, camera_y);
         }
         SDL_RenderPresent(renderer);
     }
 
-cleanup:
+    cleanup:
     debug_log("Cleaning up...");
+    level_handler_cleanup(&level_handler);
     player_cleanup(&player);
-    for (int i = 0; i < 2; i++)
-        level_cleanup(&levels[i]);
 
     if (renderer)
         SDL_DestroyRenderer(renderer);

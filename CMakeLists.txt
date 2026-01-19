@@ -10,6 +10,7 @@ add_executable(${PROJECT_NAME} main.c player/player.c
     enemies/mummy/mummy.c
     enemies/slime/slime.c
     level/level.c
+    level/levelhandler.c
     interactables/chest.c
     bgm/bgmHandler.c
     )

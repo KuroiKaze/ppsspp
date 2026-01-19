@@ -22,54 +22,130 @@ bool all_enemies_dead(Level* level) {
     return true;
 }
 
-void level1_init(Level* level, SDL_Renderer* renderer, Player* player) {
-    if (!level || !player) return;
-    sfx_init();
+void level_scan_entities(Level* level, SDL_Renderer* renderer) {
+    if (!level || !level->map.collision_layer) return;
 
-    // Player Pointer setzen
+    cute_tiled_layer_t* col = level->map.collision_layer;
+
+    // 1. Count Enemies (Same as before)
+    int enemy_count = 0;
+    for (int i = 0; i < col->width * col->height; i++) {
+        int shape = get_tile_shape(&level->map, col->data[i]);
+        if (shape == SHAPE_ZOMBIE_SPAWN || shape == SHAPE_SLIME_SPAWN) {
+            enemy_count++;
+        }
+    }
+
+    level->enemy_count = enemy_count;
+    if (enemy_count > 0) {
+        level->enemies = malloc(sizeof(Enemy*) * enemy_count);
+    } else {
+        level->enemies = NULL;
+    }
+
+    // 2. Iterate and Spawn
+    int enemy_idx = 0;
+    for (int y = 0; y < col->height; y++) {
+        for (int x = 0; x < col->width; x++) {
+            int index = y * col->width + x;
+            int shape = get_tile_shape(&level->map, col->data[index]);
+
+            int world_x = x * 16;
+            int world_y = y * 16;
+
+            if (shape == SHAPE_PLAYER_SPAWN) {
+                // Align Bottom of Player with Bottom of Tile
+                // world_y is the top of the tile.
+                // We add 16 to get to the bottom of the tile.
+                // We subtract rect.h to place the player's feet there.
+                // We subtract 2 extra pixels to spawn slightly in the air (safety buffer).
+
+                level->player->entity.rect.x = world_x;
+                level->player->entity.rect.y = (world_y + 16) - level->player->entity.rect.h - 2;
+
+                // Reset velocity to prevent carrying over momentum from previous level
+                level->player->entity.vel_x = 0;
+                level->player->entity.vel_y = 0;
+            }
+            else if (shape == SHAPE_ZOMBIE_SPAWN) {
+                Mummy* m = malloc(sizeof(Mummy));
+                *m = mummy_init(renderer, world_x, world_y); // Init first to load dimensions
+
+                // Adjust Y based on the loaded enemy height
+                m->base.entity.rect.y = (world_y + 16) - m->base.entity.rect.h - 2;
+
+                // Update the spawn_y memory so resets work correctly
+                m->base.spawn_x = m->base.entity.rect.x;
+                m->base.spawn_y = m->base.entity.rect.y;
+
+                level->enemies[enemy_idx++] = &m->base;
+            }
+            else if (shape == SHAPE_SLIME_SPAWN) {
+                Slime* s = malloc(sizeof(Slime));
+                *s = slime_init(renderer, world_x, world_y);
+
+                // Adjust Y based on the loaded enemy height
+                s->base.entity.rect.y = (world_y + 16) - s->base.entity.rect.h - 2;
+
+                s->base.spawn_x = s->base.entity.rect.x;
+                s->base.spawn_y = s->base.entity.rect.y;
+
+                level->enemies[enemy_idx++] = &s->base;
+            }
+        }
+    }
+}
+
+void level_load(Level* level, SDL_Renderer* renderer, Player* player, const char* map_path, const char** texture_paths, int tex_count) {
+    if (!level || !player) return;
+
     level->player = player;
 
-    // Map & Background
-    map_init(&level->map, renderer,
-        "host0:/resources/maps/map_level1.json",
-        "host0:/resources/Gothicvania Collection Files/Assets/Environments/Cemetery/base/Layers/tileset.png",
-        "host0:/resources/Gothicvania Collection Files/Assets/Environments/Cemetery/Add-on 1/Layers/tower_size_reduced.png",
-        "host0:/resources/sprites/collision_tileset.png");
+    // Initialize Map
+    if (!map_init(&level->map, renderer, map_path, texture_paths, tex_count)) {
+        debug_log("Failed to load map: %s", map_path);
+        return;
+    }
 
+    // Backgrounds (Keep default or make dynamic)
     level->layer_far_back = background_layer_init(renderer, "host0:/resources/Gothicvania Collection Files/Assets/Environments/Cemetery/base/Layers/background.png", 0.005f);
     level->layer_mid      = background_layer_init(renderer, "host0:/resources/Gothicvania Collection Files/Assets/Environments/Cemetery/base/Layers/mountains.png", 0.3f);
     level->layer_fore     = background_layer_init(renderer, "host0:/resources/Gothicvania Collection Files/Assets/Environments/Cemetery/base/Layers/graveyard.png", 0.5f);
 
-    // Gegner initialisieren
-    level->enemy_count = 2;
-    level->enemies = malloc(sizeof(Enemy*) * MAX_ENEMIES);
 
-    Mummy* mummy = malloc(sizeof(Mummy));
-    *mummy = mummy_init(renderer, 350, 100);
-    level->enemies[0] = &mummy->base;
+    level_scan_entities(level, renderer);
 
-    Slime* slime = malloc(sizeof(Slime));
-    *slime = slime_init(renderer, 500, 100);
-    level->enemies[1] = &slime->base;
-
-    if (!bgm_init()) {
-        debug_log("BGM konnte nicht initialisiert werden!\n");
-    }
-    bgm_play(&bgm, "host0:/resources/music/medieval-ambient-236809.wav", -1); // -1 = loop
-    // Initialisierung
-    Mix_VolumeChunk(mummy->base.entity.grunt_sfx, 10); // Lautstärke 0-128
-    mummy->base.entity.grunt_sfx_channel = Mix_PlayChannel(-1, mummy->base.entity.grunt_sfx, -1); // -1 = unendlich loopen
-
-    if (TTF_Init() == -1) {
-        debug_log("TTF_Init Error: %s\n", TTF_GetError());
-    }
-        level->font = TTF_OpenFont("host0:/resources/fonts/ARIAL.ttf", 16);
-    if (!level->font) {
-        debug_log("Font load error: %s\n", TTF_GetError());
-    }
-
+    // Chest (Logic remains separate for now unless you add SHAPE_CHEST)
+    level->chest_spawned = false;
     level->loot_chest = chest_init(renderer, "host0:/resources/sprites/chest-", 400, 375);
-    level->chest_spawned = false; // erst nach allen Gegnern sichtbar
+
+    // Load Font
+    if (!level->font) {
+        TTF_Init();
+        level->font = TTF_OpenFont("host0:/resources/fonts/ARIAL.ttf", 14);
+    }
+
+    // Pre-render Textures (Generate ONCE)
+    if (level->font) {
+        SDL_Color yellow = {255, 255, 0, 255};
+        SDL_Surface* surf_door = TTF_RenderText_Solid(level->font, "Press UP to Enter", yellow);
+        if (surf_door) {
+            level->txt_door_texture = SDL_CreateTextureFromSurface(renderer, surf_door);
+            level->txt_door_w = surf_door->w;
+            level->txt_door_h = surf_door->h;
+            SDL_FreeSurface(surf_door);
+        }
+
+        SDL_Color white = {255, 255, 255, 255};
+        SDL_Surface* surf_chest = TTF_RenderText_Solid(level->font, "Press SQUARE to Collect", white);
+        if (surf_chest) {
+            level->txt_chest_texture = SDL_CreateTextureFromSurface(renderer, surf_chest);
+            level->txt_chest_w = surf_chest->w;
+            level->txt_chest_h = surf_chest->h;
+            SDL_FreeSurface(surf_chest);
+        }
+    }
+
 }
 
 void level_update(Level* level, SceCtrlData* pad, SDL_Renderer* renderer) {
@@ -109,7 +185,7 @@ void level_update(Level* level, SceCtrlData* pad, SDL_Renderer* renderer) {
 
     for (int i = 0; i < level->enemy_count; i++) {
         Enemy* e = level->enemies[i];
-    
+
         enemy_take_damage_from_player(e, player->attack_rect, 10);
         enemy_update(e, player, &level->map);
         enemy_handle_attack(e, player);
@@ -137,47 +213,58 @@ void level_render(Level* level, SDL_Renderer* renderer, int camera_x, int camera
     if (!level || !level->player) return;
     Player* player = level->player;
 
-    // Hintergrund
+    // 1. Backgrounds
     background_layer_render(renderer, &level->layer_far_back, camera_x, camera_y, 480, 272);
     background_layer_render(renderer, &level->layer_mid, camera_x, camera_y, 480, 272);
     background_layer_render(renderer, &level->layer_fore, camera_x, camera_y, 480, 272);
 
-    // Map
+    // 2. Map
     map_render(renderer, &level->map, camera_x, camera_y);
 
-    // Gegner
+    // 3. Enemies
     for(int i = 0; i < level->enemy_count; i++) {
         enemy_render(renderer, level->enemies[i], camera_x, camera_y);
     }
 
-    // Player
+    // 4. Player
     int is_moving = (player->entity.vel_x != 0);
     player_render(renderer, player, is_moving, camera_x, camera_y);
 
+    // 5. Chest & Interaction UI
     if (level->chest_spawned && !level->loot_chest.collected) {
         chest_render(renderer, &level->loot_chest, camera_x, camera_y);
 
-        bool near_player = chest_check_collision(&level->loot_chest, level->player->entity.rect);
-        if (near_player) {
-            SDL_Color color = {255, 255, 255, 255};
-            SDL_Surface* text_surface = TTF_RenderText_Blended(level->font, "Press Square to open", color);
-            if (text_surface) {
-                SDL_Texture* text_texture = SDL_CreateTextureFromSurface(renderer, text_surface);
-                SDL_FreeSurface(text_surface);
+        if (chest_check_collision(&level->loot_chest, player->entity.rect)) {
+            if (level->txt_chest_texture) {
+                int visual_chest_w = level->loot_chest.rect.w * 1.5;
+                int text_x = (level->loot_chest.rect.x - camera_x) + (visual_chest_w / 2) - (level->txt_chest_w / 2);
+                int text_y = (level->loot_chest.rect.y - camera_y) - level->txt_chest_h - 5;
 
-                SDL_Rect text_rect;
-                text_rect.x = level->loot_chest.rect.x - camera_x;
-                text_rect.y = level->loot_chest.rect.y - camera_y;
-                SDL_QueryTexture(text_texture, NULL, NULL, &text_rect.w, &text_rect.h );
-
-                SDL_RenderCopy(renderer, text_texture, NULL, &text_rect);
-                SDL_DestroyTexture(text_texture);
+                SDL_Rect dst = { text_x, text_y, level->txt_chest_w, level->txt_chest_h };
+                SDL_RenderCopy(renderer, level->txt_chest_texture, NULL, &dst);
             }
-        }   
-}
-    // UI
+        }
+    }
+
+    // 6. UI Health
     ui_render_health_bar(renderer, player->entity.health);
+
+    // 7. Door Indicator
+    int check_x = player->entity.rect.x + (player->entity.rect.w / 2);
+    int check_y = player->entity.rect.y + player->entity.rect.h - 8;
+
+    if (map_get_shape_at(&level->map, check_x, check_y) == SHAPE_DOOR) {
+        if (level->txt_door_texture) {
+            SDL_Rect dst = {
+                    (player->entity.rect.x - camera_x) - 20,
+                    (player->entity.rect.y - camera_y) - 30,
+                    level->txt_door_w, level->txt_door_h
+            };
+            SDL_RenderCopy(renderer, level->txt_door_texture, NULL, &dst);
+        }
+    }
 }
+
 
 void level_reset(Level* level) {
     if (!level || !level->player) return;
@@ -209,11 +296,21 @@ void level_cleanup(Level* level) {
     free(level->enemies);
     level->enemies = NULL;
 
+    if (level->txt_door_texture) {
+        SDL_DestroyTexture(level->txt_door_texture);
+        level->txt_door_texture = NULL;
+    }
+    if (level->txt_chest_texture) {
+        SDL_DestroyTexture(level->txt_chest_texture);
+        level->txt_chest_texture = NULL;
+    }
+
     if (level->font) {
         TTF_CloseFont(level->font);
         level->font = NULL;
     }
     TTF_Quit();
+
 
     map_cleanup(&level->map);
     background_layer_cleanup(&level->layer_far_back);

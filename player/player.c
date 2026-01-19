@@ -104,8 +104,8 @@ void player_handle_input(Player *player, const SceCtrlData *pad) {
     if (pad->Buttons & PSP_CTRL_LEFT)  { e->vel_x = -PLAYER_MOVEMENT_SPEED; e->flip_direction = SDL_FLIP_HORIZONTAL; }
     if (pad->Buttons & PSP_CTRL_RIGHT) { e->vel_x =  PLAYER_MOVEMENT_SPEED; e->flip_direction = SDL_FLIP_NONE; }
 
-    int cross_just_pressed = ((pad->Buttons & PSP_CTRL_CROSS) || (pad->Buttons & PSP_CTRL_UP)) &&
-    !((player->prev_buttons & PSP_CTRL_CROSS) || (player->prev_buttons & PSP_CTRL_UP));    
+    int cross_just_pressed = (pad->Buttons & PSP_CTRL_CROSS) && !(player->prev_buttons & PSP_CTRL_CROSS);
+
     if (cross_just_pressed && e->on_ground) {
         e->vel_y = -JUMP_FORCE;
         e->on_ground = 0;
