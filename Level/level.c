@@ -96,30 +96,33 @@ void level_scan_entities(Level* level, SDL_Renderer* renderer) {
     }
 }
 
-void level_load(Level* level, SDL_Renderer* renderer, Player* player, const char* map_path, const char** texture_paths, int tex_count) {
+void level_load(Level* level, SDL_Renderer* renderer, Player* player, const char* map_path, const char** texture_paths, int tex_count, BgConfig* bg_configs) {
     if (!level || !player) return;
 
     level->player = player;
 
-    // Initialize Map
     if (!map_init(&level->map, renderer, map_path, texture_paths, tex_count)) {
         debug_log("Failed to load map: %s", map_path);
         return;
     }
 
-    // Backgrounds (Keep default or make dynamic)
-    level->layer_far_back = background_layer_init(renderer, "host0:/resources/Gothicvania Collection Files/Assets/Environments/Cemetery/base/Layers/background.png", 0.005f);
-    level->layer_mid      = background_layer_init(renderer, "host0:/resources/Gothicvania Collection Files/Assets/Environments/Cemetery/base/Layers/mountains.png", 0.3f);
-    level->layer_fore     = background_layer_init(renderer, "host0:/resources/Gothicvania Collection Files/Assets/Environments/Cemetery/base/Layers/graveyard.png", 0.5f);
+    // [0] = Far Back, [1] = Mid, [2] = Fore
 
+    level->layer_far_back = background_layer_init(renderer, bg_configs[0].path, bg_configs[0].speed, bg_configs[0].scale);
+    level->layer_mid      = background_layer_init(renderer, bg_configs[1].path, bg_configs[1].speed, bg_configs[1].scale);
+
+    if (bg_configs[2].path != NULL) {
+        level->layer_fore = background_layer_init(renderer, bg_configs[2].path, bg_configs[2].speed, bg_configs[2].scale);
+    } else {
+        level->layer_fore.texture = NULL;
+    }
 
     level_scan_entities(level, renderer);
-
 // Chest
     level->chest_spawned = false;
     level->loot_chest = chest_init(renderer, "host0:/resources/sprites/chest-", 400, 375);
 
-    // --- NEW: Load Text as Images ---
+
     // 1. Load Door Text
     level->txt_door_texture = IMG_LoadTexture(renderer, "host0:/resources/ui/text_door.png");
     if (level->txt_door_texture) {

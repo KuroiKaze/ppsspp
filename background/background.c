@@ -4,53 +4,50 @@
 
 extern SDL_Texture *load_texture(SDL_Renderer *renderer, const char *path);
 
-BackgroundLayer background_layer_init(SDL_Renderer *renderer, const char *path, float speed) {
+BackgroundLayer background_layer_init(SDL_Renderer *renderer, const char *path, float speed, float scale) {
     BackgroundLayer layer = {0};
     layer.texture = load_texture(renderer, path);
     layer.scroll_speed = speed;
+    layer.scale = scale > 0.0f ? scale : 1.0f;
     return layer;
 }
 
 void background_layer_render(SDL_Renderer *renderer, const BackgroundLayer *layer, int camera_x, int camera_y, int screen_width, int screen_height) {
     if (!layer->texture) return;
 
-    int w, h;
-    SDL_QueryTexture(layer->texture, NULL, NULL, &w, &h);
+    int raw_w, raw_h;
+    SDL_QueryTexture(layer->texture, NULL, NULL, &raw_w, &raw_h);
 
-    // Safety check to prevent infinite loops if texture is 0 width
-    if (w <= 0) return;
+    if (raw_w <= 0) return;
 
-    // --- 1. Calculate Horizontal Offset ---
+    // --- 2. Calculate Scaled Dimensions ---
+    int w = (int)(raw_w * layer->scale);
+    int h = (int)(raw_h * layer->scale);
+
+    // --- 3. Update Parallax with Scaled Width ---
     float parallax_x = (float)camera_x * layer->scroll_speed;
 
-    // Modulo % keeps the number wrapped within the texture width (0 to w)
+    // Wrap using the SCALED width
     int offset_x = (int)parallax_x % w;
-
-    // Handle negative offsets (if camera moves left past 0)
     if (offset_x < 0) offset_x += w;
 
-    // --- 2. Calculate Vertical Offset (Parallax) ---
-    // Multiply by 0.1f or 0.2f to make vertical movement subtle compared to horizontal
     float vertical_speed_factor = 0.1f;
     int offset_y = (int)(camera_y * layer->scroll_speed * vertical_speed_factor);
 
-    // --- 3. Render Loop (The Fix) ---
-    // Start drawing from the negative offset (slightly off the left side of screen)
+    // --- 4. Render Loop with Scaled Rects ---
     int current_draw_x = -offset_x;
 
-    // Keep drawing copies to the right until we cover the entire screen width
     while (current_draw_x < screen_width) {
-
         SDL_Rect dest_rect = {
                 current_draw_x,
-                -offset_y, // Apply vertical parallax
-                w,         // Use actual texture width
-                h          // Use actual texture height
+                -offset_y,
+                w, // Render with scaled width
+                h  // Render with scaled height
         };
 
         SDL_RenderCopy(renderer, layer->texture, NULL, &dest_rect);
 
-        // Move to the next position
+        // Move forward by scaled width
         current_draw_x += w;
     }
 }

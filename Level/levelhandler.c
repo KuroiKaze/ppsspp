@@ -9,10 +9,22 @@ const char* level1_textures[] = {
         "host0:/resources/Gothicvania Collection Files/Assets/Environments/Cemetery/Add-on 1/Layers/tower_size_reduced.png"
 };
 
+BgConfig level1_bgs[] = {
+        {"host0:/resources/Gothicvania Collection Files/Assets/Environments/Cemetery/base/Layers/background.png", 0.05f, 1.0f}, // [0] Far
+        {"host0:/resources/Gothicvania Collection Files/Assets/Environments/Cemetery/base/Layers/mountains.png", 0.2f,  1.0f }, // [1] Mid
+        {"host0:/resources/Gothicvania Collection Files/Assets/Environments/Cemetery/base/Layers/graveyard.png", 0.5f,  1.0f}   // [2] Fore
+};
+
 const char* level2_textures[] = {
         "host0:/resources/Gothicvania Collection Files/Assets/Environments/Magic Castle/layers/magic-castle-background.png",
         "host0:/resources/Gothicvania Collection Files/Assets/Environments/Magic Castle/layers/magic-castle-tiles.png",
         "host0:/resources/Gothicvania Collection Files/Assets/Environments/Magic Castle/layers/magic-castle-sprites.png"
+};
+
+BgConfig level2_bgs[] = {
+        {"host0:/resources/Gothicvania Collection Files/Assets/Environments/Magic Castle/layers/magic-castle-back.png", 0.5f, 1.4f}, // [0] Far
+        {"host0:/resources/Gothicvania Collection Files/Assets/Environments/Magic Castle/layers/magic-castle-mid.png", 0.2f,  1.0f }, // [1] Mid
+        {NULL, 0, 0} // NULL = No foreground layer for this level
 };
 
 LevelHandler level_handler_init(SDL_Renderer* renderer, Player* player) {
@@ -26,7 +38,10 @@ LevelHandler level_handler_init(SDL_Renderer* renderer, Player* player) {
     handler.map_paths[1] = "host0:/resources/maps/map_level2.json";
 
     debug_log("Handler: Loading Level 0...");
-    level_load(&handler.current_level, renderer, player, handler.map_paths[0], level1_textures, 2);
+    level_load(&handler.current_level, renderer, player,
+               handler.map_paths[0],
+               level1_textures, 2,
+               level1_bgs);
 
     return handler;
 }
@@ -35,17 +50,24 @@ void level_handler_change_level(LevelHandler* handler, int new_index) {
     if (new_index >= handler->total_levels) return;
 
     level_cleanup(&handler->current_level);
+
     handler->current_level_index = new_index;
 
     debug_log("Handler: Switching to Level %d...", new_index);
 
     if (new_index == 0) {
-        level_load(&handler->current_level, handler->renderer, handler->player, handler->map_paths[0], level1_textures, 2);
+        level_load(&handler->current_level, handler->renderer, handler->player,
+                   handler->map_paths[0],
+                   level1_textures, 2,
+                   level1_bgs);
     } else if (new_index == 1) {
-        level_load(&handler->current_level, handler->renderer, handler->player, handler->map_paths[1], level2_textures, 3);
+        level_load(&handler->current_level, handler->renderer, handler->player,
+                   handler->map_paths[1],
+                   level2_textures, 3,
+                   level2_bgs);
     }
 
-        // Reset Player Velocity
+    // Reset Player Velocity
     handler->player->entity.vel_x = 0;
     handler->player->entity.vel_y = 0;
 }
