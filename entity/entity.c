@@ -1,4 +1,5 @@
 #include "entity.h"
+#include "../map/map.h"
 #include <SDL.h>
 #include <SDL_image.h>
 #include <stdio.h>
@@ -71,94 +72,95 @@ void entity_cleanup(Entity *e){
     sfx_cleanup(e->grunt_sfx);
 }
 
-void entity_update_physics(Entity *e, struct Map *map, float gravity, float max_fall_speed) {
-    // ============================================================
-    // 1. CALCULATE BOUNDS
-    // ============================================================
-    int current_feet_y = e->rect.y + e->rect.h;
-    int center_x = e->rect.x + (e->rect.w / 2);
 
+void entity_update_physics(Entity *e, Map *map, float gravity, float max_fall_speed) {
     // ============================================================
-    // 2. X-AXIS (Horizontal Move + Slope Climbing)
+    // 1. X-AXIS MOVEMENT
     // ============================================================
+    int original_x = e->rect.x;
     int next_x = e->rect.x + (int)e->vel_x;
-    int next_center_x = next_x + (e->rect.w / 2);
 
-    // A. HEAD CHECK (High Wall / Ceiling Check)
-    // We only check the very top of the sprite for hard stops.
-    // This prevents walking into overhangs, but ignores the slopes at the feet.
-    int lead_x = (e->vel_x > 0) ? next_x + e->rect.w : next_x;
-    int head_hit = map_is_solid(map, lead_x, e->rect.y);
+    // We tentatively apply the move
+    e->rect.x = next_x;
 
-    if (head_hit) {
+    // Check HEAD collision (Ceiling / Low Overhangs)
+    // If the head is inside a solid block, we stop immediately.
+    // We check the leading edge + offset to avoid clipping.
+    int direction = (e->vel_x > 0) ? 1 : -1;
+    int lead_x = (direction > 0) ? e->rect.x + e->rect.w : e->rect.x;
+
+    if (map_is_solid(map, lead_x, e->rect.y)) {
+        // Head hit a wall -> Revert X
+        e->rect.x = original_x;
         e->vel_x = 0;
     }
     else {
-        // B. TERRAIN CHECK (Feet/Slope)
+        // FEET / SLOPE COLLISION
+        int feet_y = e->rect.y + e->rect.h;
+        int center_x = e->rect.x + (e->rect.w / 2);
 
-        int next_floor_y = map_get_floor_height(map, next_center_x, current_feet_y);
+        // Check floor height at the NEW center position
+        int new_floor = map_get_floor_height(map, center_x, feet_y);
 
-        int can_move = 1;
+        if (new_floor != -1) {
+            int diff = feet_y - new_floor;
+            // Positive = Floor is higher (Step Up / Slope Up)
+            // Negative = Floor is lower (Step Down / Slope Down)
 
-        if (next_floor_y != -1) {
-            int step_diff = next_floor_y - current_feet_y;
-            // step_diff < 0 : Slope UP (Floor is higher)
-            // step_diff > 0 : Slope DOWN (Floor is lower)
-
-            // MAX CLIMB HEIGHT: 18 pixels.
-            // This covers 45-degree slopes (16px) and 1-block steps.
-            // Anything higher is a WALL.
-            if (step_diff < -18) {
-                // Wall detected
-                can_move = 0;
+            // TOLERANCE:
+            // 24px allows climbing 16px slopes + 8px of gravity/margin.
+            // Any step higher than 24px is treated as a WALL.
+            if (diff > 24) {
+                // Wall is too steep -> Revert X
+                e->rect.x = original_x;
                 e->vel_x = 0;
             }
-                // If the slope is walkable (Up 18px or Down any amount)
-            else if (abs(step_diff) <= 18) {
-                // If we are currently on the ground, snap to the slope.
-                // This handles moving up 45-degree slopes and 2:1 slopes smoothly.
+                // If it is a walkable slope (Up or Down within limit)
+            else if (abs(diff) <= 24) {
+                // If we are on the ground (or close enough to snap), adjust Y
                 if (e->on_ground) {
-                    e->rect.y = next_floor_y - e->rect.h;
+                    e->rect.y = new_floor - e->rect.h;
                     e->vel_y = 0;
                 }
             }
-            // If step_diff > 18, it's a cliff/drop-off. We allow the move (gravity will handle falling).
-        }
-
-        if (can_move) {
-            e->rect.x = next_x;
+            // If diff < -24 (Falling off a cliff), we do nothing here.
+            // Gravity in Step 2 will handle the fall.
         }
     }
 
     // ============================================================
-    // 3. Y-AXIS (Gravity, Jumping & Sticky Floor)
+    // 2. Y-AXIS MOVEMENT
     // ============================================================
     e->vel_y += gravity;
     if(e->vel_y > max_fall_speed) e->vel_y = max_fall_speed;
 
     if (e->vel_y < 0) {
-        // --- JUMPING UP ---
+        // --- JUMPING ---
         int next_y = e->rect.y + (int)e->vel_y;
 
         // Check Head corners
         if (map_is_solid(map, e->rect.x, next_y) ||
             map_is_solid(map, e->rect.x + e->rect.w, next_y)) {
             e->vel_y = 0;
-            e->rect.y = ((e->rect.y / 16) + 1) * 16; // Bonk head, snap down
+            e->rect.y = ((e->rect.y / 16) + 1) * 16; // Snap down
         } else {
             e->rect.y = next_y;
         }
         e->on_ground = 0;
     }
     else {
-        // --- FALLING / STABILIZING ---
-        int current_floor = map_get_floor_height(map, e->rect.x + e->rect.w/2, e->rect.y + e->rect.h);
+        // --- FALLING / STICKY ---
 
+        // Sticky Logic: Before moving down, check if we can stick to floor
+        int center_x = e->rect.x + e->rect.w/2;
+        int feet_y   = e->rect.y + e->rect.h;
+        int current_floor = map_get_floor_height(map, center_x, feet_y);
         int snapped = 0;
+
+        // If grounded and floor is close (<= 10px), stick to it
+        // 10px handles steep descents (45 degrees) better than 6px
         if (e->on_ground && current_floor != -1) {
-            int dist = abs(current_floor - (e->rect.y + e->rect.h));
-            // If we are very close to the floor (within 4px), stick to it.
-            if (dist <= 4) {
+            if (abs(current_floor - feet_y) <= 10) {
                 e->rect.y = current_floor - e->rect.h;
                 e->vel_y = 0;
                 snapped = 1;
@@ -166,12 +168,13 @@ void entity_update_physics(Entity *e, struct Map *map, float gravity, float max_
         }
 
         if (!snapped) {
-            // Apply Gravity Move
             e->rect.y += (int)e->vel_y;
 
-            // Check Landing (Standard)
-            int final_floor = map_get_floor_height(map, e->rect.x + e->rect.w/2, e->rect.y + e->rect.h);
-            if (final_floor != -1 && (e->rect.y + e->rect.h) >= final_floor - 2) {
+            // Landing Logic
+            int new_feet_y = e->rect.y + e->rect.h;
+            int final_floor = map_get_floor_height(map, center_x, new_feet_y);
+
+            if (final_floor != -1 && new_feet_y >= final_floor - 2) {
                 e->rect.y = final_floor - e->rect.h;
                 e->vel_y = 0;
                 e->on_ground = 1;
@@ -180,9 +183,7 @@ void entity_update_physics(Entity *e, struct Map *map, float gravity, float max_
             }
         }
     }
-}
-
-void entity_update_animation(Entity *e, int is_moving, Uint32 speed) {
+}void entity_update_animation(Entity *e, int is_moving, Uint32 speed) {
     Uint32 now = SDL_GetTicks();
     if (now - e->last_time < speed) return;
     e->last_time = now;
