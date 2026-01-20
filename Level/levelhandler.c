@@ -5,25 +5,25 @@ extern void debug_log(const char *format, ...);
 
 // Store texture configs for each level
 const char* level1_textures[] = {
-        "host0:/resources/Gothicvania Collection Files/Assets/Environments/Cemetery/base/Layers/tileset.png",
-        "host0:/resources/Gothicvania Collection Files/Assets/Environments/Cemetery/Add-on 1/Layers/tower_size_reduced.png"
+        "host0:/resources/levels/cemetery/tileset.png",
+        "host0:/resources/levels/cemetery/tower.png",
 };
 
 BgConfig level1_bgs[] = {
-        {"host0:/resources/Gothicvania Collection Files/Assets/Environments/Cemetery/base/Layers/background.png", 0.05f, 1.0f}, // [0] Far
-        {"host0:/resources/Gothicvania Collection Files/Assets/Environments/Cemetery/base/Layers/mountains.png", 0.2f,  1.0f }, // [1] Mid
-        {"host0:/resources/Gothicvania Collection Files/Assets/Environments/Cemetery/base/Layers/graveyard.png", 0.5f,  1.0f}   // [2] Fore
+        {"host0:/resources/levels/cemetery/background.png", 0.05f, 1.0f}, // [0] Far
+        {"host0:/resources/levels/cemetery/mountains.png", 0.2f,  1.0f }, // [1] Mid
+        {"host0:/resources/levels/cemetery/graveyard.png", 0.5f,  1.0f}   // [2] Fore
 };
 
 const char* level2_textures[] = {
-        "host0:/resources/Gothicvania Collection Files/Assets/Environments/Magic Castle/layers/magic-castle-background.png",
-        "host0:/resources/Gothicvania Collection Files/Assets/Environments/Magic Castle/layers/magic-castle-tiles.png",
-        "host0:/resources/Gothicvania Collection Files/Assets/Environments/Magic Castle/layers/magic-castle-sprites.png"
+        "host0:/resources/levels/castle/background.png",
+        "host0:/resources/levels/castle/tiles.png",
+        "host0:/resources/levels/castle/sprites.png"
 };
 
 BgConfig level2_bgs[] = {
-        {"host0:/resources/Gothicvania Collection Files/Assets/Environments/Magic Castle/layers/magic-castle-back.png", 0.5f, 1.4f}, // [0] Far
-        {"host0:/resources/Gothicvania Collection Files/Assets/Environments/Magic Castle/layers/magic-castle-mid.png", 0.2f,  1.0f }, // [1] Mid
+        {"host0:/resources/levels/castle/back.png", 0.05f, 0.05f}, // [0] Far
+        {"host0:/resources/levels/castle/mid.png", 1.0f,  1.4f }, // [1] Mid
         {NULL, 0, 0} // NULL = No foreground layer for this level
 };
 

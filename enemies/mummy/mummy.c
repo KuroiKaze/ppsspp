@@ -1,9 +1,9 @@
 #include "mummy.h"
 #include <SDL_image.h>
 
-#define IDLE_BASE_PATH "host0:/resources/Gothicvania Collection Files/Assets/Characters/NPC and ENEMIES/mummy-idle/Sprites/mummy-idle-"
-#define RUN_BASE_PATH  "host0:/resources/Gothicvania Collection Files/Assets/Characters/NPC and ENEMIES/mummy-walk/Sprites/mummy-walk-"
-#define DEATH_BASE_PATH    "host0:/resources/Gothicvania Collection Files/Assets/Items, FX and Props/Blue-Enemy-Death/Sprites/Enemy-Death"
+#define IDLE_BASE_PATH  "resources/sprites/enemies/mummy/idle/mummy-idle-"
+#define RUN_BASE_PATH   "resources/sprites/enemies/mummy/walk/mummy-walk-"
+#define DEATH_BASE_PATH "resources/sprites/enemies/common/death/Enemy-Death"
 #define HIT_BOX_SCALE_W 0.5f
 #define HIT_BOX_SCALE_H 0.8f
 

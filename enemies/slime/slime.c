@@ -1,9 +1,9 @@
 #include "slime.h"
 #include <SDL_image.h>
 
-#define IDLE_BASE_PATH "host0:/resources/Gothicvania Collection Files/Assets/Characters/NPC and ENEMIES/slime-idle/Sprites/slime-idle-"
-#define RUN_BASE_PATH  "host0:/resources/Gothicvania Collection Files/Assets/Characters/NPC and ENEMIES/slime-jump/Sprites/slime-jump-"
-
+#define IDLE_BASE_PATH  "resources/sprites/enemies/slime/idle/slime-idle-"
+#define RUN_BASE_PATH   "resources/sprites/enemies/slime/jump/slime-jump-"
+#define DEATH_BASE_PATH "resources/sprites/enemies/common/death/Enemy-Death"
 #define HIT_BOX_SCALE_W 0.5f
 #define HIT_BOX_SCALE_H 0.8f
 

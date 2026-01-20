@@ -4,11 +4,11 @@
 #include <stdlib.h>
 #include "../map/map.h"
 
-#define PLAYER_IDLE_BASE_PATH   "host0:/resources/Gothicvania Collection Files/Assets/Characters/PLAYABLE CHARACTERS/Cemetery Hero/Base/Sprites/hero-idle/hero-idle-"
-#define PLAYER_RUN_BASE_PATH    "host0:/resources/Gothicvania Collection Files/Assets/Characters/PLAYABLE CHARACTERS/Cemetery Hero/Base/Sprites/hero-run/hero-run-"
-#define PLAYER_ATTACK_BASE_PATH "host0:/resources/Gothicvania Collection Files/Assets/Characters/PLAYABLE CHARACTERS/Cemetery Hero/Base/Sprites/hero-attack/frame"
-#define PLAYER_HURT_BASE_PATH   "host0:/resources/Gothicvania Collection Files/Assets/Characters/PLAYABLE CHARACTERS/Cemetery Hero/Base/Sprites/hero-hurt/hero-hurt.png"
-#define PLAYER_JUMP_BASE_PATH   "host0:/resources/Gothicvania Collection Files/Assets/Characters/PLAYABLE CHARACTERS/Cemetery Hero/Base/Sprites/hero-jump/hero-jump-"
+#define PLAYER_ATTACK_BASE_PATH "resources/sprites/player/attack/frame"
+#define PLAYER_IDLE_BASE_PATH   "resources/sprites/player/idle/hero-idle-"
+#define PLAYER_RUN_BASE_PATH    "resources/sprites/player/run/hero-run-"
+#define PLAYER_HURT_BASE_PATH   "resources/sprites/player/hero-hurt.png"
+#define PLAYER_JUMP_BASE_PATH   "resources/sprites/player/jump/hero-jump-"
 
 extern SDL_Texture *load_texture(SDL_Renderer *renderer, const char *path);
 extern void debug_log(const char *format, ...);
