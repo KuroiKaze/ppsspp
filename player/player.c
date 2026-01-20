@@ -2,6 +2,7 @@
 #include <SDL_image.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h> // Added for fabs()
 #include "../map/map.h"
 
 #define PLAYER_ATTACK_BASE_PATH "resources/sprites/player/attack/frame"
@@ -20,10 +21,13 @@ extern void debug_log(const char *format, ...);
 #define ATTACK_HITBOX_OFFSET_Y 5
 #define ATTACK_OVERLAP 15
 
+// Physics Tweaks
+#define ACCEL 0.4f
+#define FRICTION 0.7f
 #define GRAVITY 0.4f
 #define JUMP_FORCE 9.0f
 #define MAX_FALL_SPEED 10.0f
-#define ANIMATION_SPEED 85  // ms pro Frame
+#define ANIMATION_SPEED 85
 
 // -------------------------------------------------------------
 // Cleanup
@@ -38,7 +42,7 @@ void player_cleanup(Player *player) {
 Player player_init(SDL_Renderer *renderer) {
     Player player = {0};
     Entity *e = &player.entity;
-    
+
     if (!entity_load_frames(renderer, &e->idle, PLAYER_IDLE_BASE_PATH)) goto fail;
     if (!entity_load_frames(renderer, &e->run, PLAYER_RUN_BASE_PATH)) goto fail;
     if (!entity_load_frames(renderer, &e->attack, PLAYER_ATTACK_BASE_PATH)) goto fail;
@@ -46,14 +50,15 @@ Player player_init(SDL_Renderer *renderer) {
     if (!entity_load_frames(renderer, &e->jump, PLAYER_JUMP_BASE_PATH)) goto fail;
 
     SDL_QueryTexture(e->idle.frames[0], NULL, NULL, &e->sprite_w, &e->sprite_h);
-    //hitbox
+
+    // Hitbox
     e->rect.w = (int)(e->sprite_w * HIT_BOX_SCALE_W);
     e->rect.h = (int)(e->sprite_h * HIT_BOX_SCALE_H);
 
     e->offset_x = e->sprite_w / 2 - e->rect.w / 2;
     e->offset_y = e->sprite_h - e->rect.h;
 
-    // position
+    // Position
     e->rect.x = 50;
     e->rect.y = 50;
 
@@ -61,7 +66,7 @@ Player player_init(SDL_Renderer *renderer) {
     player.attack_cooldown_end = 0;
     player.hurt_timer_end = 0;
     player.prev_buttons = 0;
-    e->last_time = SDL_GetTicks() - ANIMATION_SPEED; // prevent double frame at start
+    e->last_time = SDL_GetTicks() - ANIMATION_SPEED;
 
     e->health = PLAYER_MAX_HEALTH;
     e->movement_speed = PLAYER_MOVEMENT_SPEED;
@@ -70,40 +75,62 @@ Player player_init(SDL_Renderer *renderer) {
     e->on_ground = 0;
     e->flip_direction = SDL_FLIP_NONE;
     e->last_time = SDL_GetTicks();
-    //e->attack_sfx = Mix_LoadWAV("host0:/resources/sfx/blade_draw-99885.wav");
-    //if (!e->attack_sfx) goto fail;
 
     return player;
 
-fail:
+    fail:
     entity_cleanup(e);
     Player empty = {0};
     return empty;
 }
 
 // -------------------------------------------------------------
-// Input Handling
+// Input Handling (FIXED)
 // -------------------------------------------------------------
 void player_handle_input(Player *player, const SceCtrlData *pad) {
     Entity *e = &player->entity;
 
+    // 1. Attack Freeze
     if ((int)SDL_GetTicks() < (int)player->attack_timer_end) {
-        e->vel_x = 0;
+        // Apply friction even while attacking so you slide to a stop
+        e->vel_x *= FRICTION;
+        if (fabs(e->vel_x) < 0.1f) e->vel_x = 0;
         return;
     }
 
+    // 2. Start Attack
     if ((pad->Buttons & PSP_CTRL_CIRCLE) && SDL_GetTicks() >= player->attack_cooldown_end) {
         player->attack_timer_end = SDL_GetTicks() + ATTACK_DURATION;
         player->attack_cooldown_end = SDL_GetTicks() + ATTACK_COOLDOWN;
         player->current_attack_frame = 0;
-        e->vel_x = 0;
+        // Don't kill velocity instantly, let friction handle it in the next frame
         return;
     }
 
-    e->vel_x = 0;
-    if (pad->Buttons & PSP_CTRL_LEFT)  { e->vel_x = -PLAYER_MOVEMENT_SPEED; e->flip_direction = SDL_FLIP_HORIZONTAL; }
-    if (pad->Buttons & PSP_CTRL_RIGHT) { e->vel_x =  PLAYER_MOVEMENT_SPEED; e->flip_direction = SDL_FLIP_NONE; }
+    // 3. Movement (Acceleration / Friction)
+    // FIX: Removed "e->vel_x = 0;" here. We MUST preserve velocity between frames.
 
+    if (pad->Buttons & PSP_CTRL_LEFT) {
+        e->vel_x -= ACCEL;
+        e->flip_direction = SDL_FLIP_HORIZONTAL;
+    }
+    else if (pad->Buttons & PSP_CTRL_RIGHT) {
+        e->vel_x += ACCEL;
+        e->flip_direction = SDL_FLIP_NONE;
+    }
+    else {
+        // Friction: Slow down when no button is pressed
+        e->vel_x *= FRICTION;
+
+        // Snap to 0 to prevent micro-sliding
+        if (fabs(e->vel_x) < 0.1f) e->vel_x = 0;
+    }
+
+    // Cap the speed
+    if (e->vel_x > PLAYER_MOVEMENT_SPEED) e->vel_x = PLAYER_MOVEMENT_SPEED;
+    if (e->vel_x < -PLAYER_MOVEMENT_SPEED) e->vel_x = -PLAYER_MOVEMENT_SPEED;
+
+    // 4. Jump
     int cross_just_pressed = (pad->Buttons & PSP_CTRL_CROSS) && !(player->prev_buttons & PSP_CTRL_CROSS);
 
     if (cross_just_pressed && e->on_ground) {
@@ -112,7 +139,7 @@ void player_handle_input(Player *player, const SceCtrlData *pad) {
     }
     player->prev_buttons = pad->Buttons;
 
-    // Debug Schaden
+    // Debug Damage
     if (pad->Buttons & PSP_CTRL_LTRIGGER) {
         player_decrease_health(player, 1);
     }
@@ -122,7 +149,7 @@ void player_update_attack(Player *player) {
     Uint32 t = SDL_GetTicks();
     if (t >= player->attack_timer_end) {
         player->attack_rect = (SDL_Rect){0,0,0,0};
-        player->attack_sfx_played = false; // Reset für nächsten Angriff
+        player->attack_sfx_played = false;
         return;
     }
 
@@ -132,10 +159,10 @@ void player_update_attack(Player *player) {
     if (player->current_attack_frame >= player->entity.attack.count)
         player->current_attack_frame = player->entity.attack.count - 1;
 
-    // Attack hitbox berechnen
+    // Hitbox
     if (player->current_attack_frame == 1) {
         if (!player->attack_sfx_played) {
-            sfx_play(player->entity.attack_sfx, 0); // nur einmal abspielen
+            sfx_play(player->entity.attack_sfx, 0);
             player->attack_sfx_played = true;
         }
 
@@ -193,11 +220,11 @@ void player_render(SDL_Renderer *renderer, Player *player, int is_moving, int ca
     if (!current_texture) return;
 
     SDL_Rect render_rect = {
-    e->rect.x - e->offset_x - camera_x,
-    e->rect.y - e->offset_y - camera_y,
-    e->sprite_w,
-    e->sprite_h
-};
+            e->rect.x - e->offset_x - camera_x,
+            e->rect.y - e->offset_y - camera_y,
+            e->sprite_w,
+            e->sprite_h
+    };
 
     // --- Hurt Blinking ---
     SDL_SetTextureColorMod(current_texture, 255, 255, 255);
@@ -205,20 +232,16 @@ void player_render(SDL_Renderer *renderer, Player *player, int is_moving, int ca
         SDL_SetTextureColorMod(current_texture, 255, 100, 100);
     }
 
-    // --- Render Copy ---
     SDL_RenderCopyEx(renderer, current_texture, NULL, &render_rect, 0.0, NULL, e->flip_direction);
 
 #ifdef DEBUG_DRAW_HITBOX
     Uint8 old_r, old_g, old_b, old_a;
     SDL_GetRenderDrawColor(renderer, &old_r, &old_g, &old_b, &old_a);
-
     SDL_Rect debug_rect = e->rect;
     debug_rect.x -= camera_x;
     debug_rect.y -= camera_y;
-
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     SDL_RenderDrawRect(renderer, &debug_rect);
-
     SDL_SetRenderDrawColor(renderer, old_r, old_g, old_b, old_a);
 #endif
 }
