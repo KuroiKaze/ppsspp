@@ -3,6 +3,8 @@
 #include <pspkernel.h>
 #include <pspdisplay.h>
 #include <pspctrl.h>
+#include <pspaudiolib.h>
+#include <pspaudio.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -82,7 +84,7 @@ int main(int argc, char *argv[])
     sceCtrlSetSamplingMode(PSP_CTRL_MODE_ANALOG);
 
     debug_log("Init SDL...");
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) < 0)
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER) < 0)
         goto cleanup;
     if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG))
         goto cleanup;
@@ -175,6 +177,7 @@ int main(int argc, char *argv[])
 
     cleanup:
     debug_log("Cleaning up...");
+    audio_cleanup();
     level_handler_cleanup(&level_handler);
     player_cleanup(&player);
 

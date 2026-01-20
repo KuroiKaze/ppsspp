@@ -1,17 +1,21 @@
 #ifndef BGM_HANDLER_H
 #define BGM_HANDLER_H
 
-#include <SDL_mixer.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
 #include <stdbool.h>
 
 typedef struct {
-    Mix_Music* music;    // Hintergrundmusik
-    bool initialized;
+    Mix_Music* music;    
 } BGMHandler;
 
+// Struktur für Soundeffekte
 typedef struct {
     Mix_Chunk* chunk;    // Soundeffekte
 } SFX;
+
+bool audio_system_init();
+void audio_cleanup();
 
 // --- BGM Funktionen ---
 bool bgm_init();
