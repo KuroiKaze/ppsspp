@@ -4,10 +4,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include "../map/map.h" // Ensure we can see the Map struct
+
+// Physics Constants (Same as Player for consistency)
+#define ENEMY_GRAVITY 0.4f
+#define ENEMY_MAX_FALL_SPEED 10.0f
 
 extern SDL_Texture *load_texture(SDL_Renderer *renderer, const char *path);
-extern int map_get_floor_height(struct Map *map, int x, int y);
-extern int map_is_solid(struct Map *map, int x, int y);
 extern void debug_log(const char *format, ...);
 
 void enemy_cleanup(Enemy *enemy) {
@@ -16,16 +19,17 @@ void enemy_cleanup(Enemy *enemy) {
 
 void enemy_update(Enemy *enemy, Player *player, struct Map *map) {
     Entity *e = &enemy->entity;
+
+    // 1. Death / Dying Check
     if (enemy->entity.is_dying) {
         entity_update_death(&enemy->entity);
         return;
     }
-
     if (enemy->entity.is_dead) {
         return;
     }
 
-    // --- 1. AI LOGIK ---
+    // 2. AI LOGIC
     float p_center_x = player->entity.rect.x + player->entity.rect.w / 2.0f;
     float e_center_x = e->rect.x + e->rect.w / 2.0f;
     float diff_x = p_center_x - e_center_x;
@@ -34,43 +38,24 @@ void enemy_update(Enemy *enemy, Player *player, struct Map *map) {
     e->vel_x = 0;
     enemy->is_moving = 0;
 
+    // Face Player
     if (diff_x > 0) e->flip_direction = SDL_FLIP_NONE;
     else e->flip_direction = SDL_FLIP_HORIZONTAL;
 
+    // Chase Player
     if (distance < DETECTION_RANGE && distance > 5.0f) {
         e->vel_x = (diff_x > 0) ? ENEMY_SPEED : -ENEMY_SPEED;
         enemy->is_moving = 1;
     }
 
-    // --- 2. PHYSIK ---
-    // X-Achse
-    e->rect.x += (int)e->vel_x;
-    int center_y = e->rect.y + e->rect.h / 2;
-    if (e->vel_x > 0 && map_is_solid(map, e->rect.x + e->rect.w, center_y)) {
-        int tile_left = ((e->rect.x + e->rect.w) / 16) * 16;
-        e->rect.x = tile_left - e->rect.w;
-    }
-    else if (e->vel_x < 0 && map_is_solid(map, e->rect.x, center_y)) {
-        int tile_right = (e->rect.x / 16) * 16 + 16;
-        e->rect.x = tile_right;
-    }
+    // 3. PHYSICS UPDATE
+    // Replaced manual physics with the robust system
+    entity_update_physics(e, map, ENEMY_GRAVITY, ENEMY_MAX_FALL_SPEED);
 
-    // Y-Achse & Boden
-    e->vel_y += GRAVITY;
-    if (e->vel_y > MAX_FALL_SPEED) e->vel_y = MAX_FALL_SPEED;
-    e->rect.y += (int)e->vel_y;
+    // Death floor check
+    if (e->rect.y > 600) e->health = 0;
 
-    int floor = map_get_floor_height(map, e->rect.x + e->rect.w / 2, e->rect.y + e->rect.h);
-    e->on_ground = 0;
-    if (floor != -1 && abs((e->rect.y + e->rect.h) - floor) <= 10) {
-        e->rect.y = floor - e->rect.h;
-        e->vel_y = 0;
-        e->on_ground = 1;
-    }
-
-    if (e->rect.y > 600) e->health = 0; // Tod beim Fallen
-
-    // --- 3. ANIMATION ---
+    // 4. ANIMATION
     entity_update_animation(e, enemy->is_moving, ENEMY_ANIMATION_SPEED);
 }
 
@@ -116,38 +101,39 @@ void enemy_render(SDL_Renderer *renderer, Enemy *enemy, int camera_x, int camera
 void enemy_decrease_health(Enemy *enemy, int amount) {
     enemy->entity.health -= amount;
     if (enemy->entity.health <= 0 && !enemy->entity.is_dying) {
-    enemy->entity.is_dying = 1;
-    enemy->entity.current_death_frame = 0;
-    enemy->entity.alpha = 255;
-    enemy->entity.vel_x = 0;
-    enemy->entity.vel_y = 0;
-}
+        enemy->entity.is_dying = 1;
+        enemy->entity.current_death_frame = 0;
+        enemy->entity.alpha = 255;
+        enemy->entity.vel_x = 0;
+        enemy->entity.vel_y = 0;
+    }
 }
 
 void enemy_handle_attack(Enemy *enemy, Player *player) {
     if (enemy->entity.health <= 0) return;
 
-    // Hitbox für Kollisionsprüfung anpassen
+    // Hitbox Adjustment
     SDL_Rect enemy_hitbox = enemy->entity.rect;
-    enemy_hitbox.x += 4;
-    enemy_hitbox.w -= 8;
-    enemy_hitbox.y += 4;
-    enemy_hitbox.h -= 8;
+    enemy_hitbox.x += 4; enemy_hitbox.w -= 8;
+    enemy_hitbox.y += 4; enemy_hitbox.h -= 8;
 
-    // Angriff auf Spieler
+    // Attack Player
     if (SDL_HasIntersection(&player->entity.rect, &enemy_hitbox)) {
         int old_health = player->entity.health;
         player_decrease_health(player, 10);
 
-        // Pushback
+        // --- FIXED PUSHBACK ---
         float player_center_x = player->entity.rect.x + (player->entity.rect.w / 2.0f);
         float enemy_center_x = enemy_hitbox.x + (enemy_hitbox.w / 2.0f);
 
+        // We removed the lines that manually set player->entity.rect.x
+        // Now we only set Velocity, so the Physics Engine handles the wall collision.
+
         if (player_center_x < enemy_center_x) {
-            player->entity.rect.x = enemy_hitbox.x - player->entity.rect.w - 1;
+            // Push Left
             if (player->entity.health < old_health) player->entity.vel_x = -8.0f;
         } else {
-            player->entity.rect.x = enemy_hitbox.x + enemy_hitbox.w + 1;
+            // Push Right
             if (player->entity.health < old_health) player->entity.vel_x = 8.0f;
         }
 
