@@ -113,7 +113,9 @@ int main(int argc, char *argv[])
         while (SDL_PollEvent(&event)) if (event.type == SDL_QUIT) running = 0;
 
         sceCtrlReadBufferPositive(&pad, 1);
-        if (pad.Buttons & PSP_CTRL_SELECT) running = 0;
+        if (pad.Buttons & PSP_CTRL_SELECT) {
+            level_handler_change_level(&level_handler, 0);
+        }
 
         int is_moving = (player.entity.vel_x != 0);
 

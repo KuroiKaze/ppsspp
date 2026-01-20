@@ -27,5 +27,6 @@ LevelHandler level_handler_init(SDL_Renderer* renderer, Player* player);
 void level_handler_update(LevelHandler* handler, SceCtrlData* pad);
 void level_handler_render(LevelHandler* handler, int camera_x, int camera_y);
 void level_handler_cleanup(LevelHandler* handler);
+void level_handler_change_level(LevelHandler* handler, int new_index);
 
 #endif
