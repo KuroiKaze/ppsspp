@@ -16,10 +16,10 @@ cmake-build-*/
 
 # --- CMake Generated Files ---
 ../CMakeCache.txt
-CMakeFiles/
+../CMakeFiles/
 cmake_install.cmake
-Makefile
-CTestTestfile.cmake
+../Makefile
+../CTestTestfile.cmake
 Testing/
 
 # --- Compilation Outputs (Standard) ---
@@ -49,3 +49,6 @@ Desktop.ini
 # Just in case you have temporary design files you don't want committed
 *.psd
 *.xcf
+
+# -- other stuff --
+../crash_log.txt
