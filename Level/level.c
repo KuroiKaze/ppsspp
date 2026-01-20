@@ -120,11 +120,11 @@ void level_load(Level* level, SDL_Renderer* renderer, Player* player, const char
     level_scan_entities(level, renderer);
 // Chest
     level->chest_spawned = false;
-    level->loot_chest = chest_init(renderer, "host0:/resources/sprites/chest-", 400, 375);
+    level->loot_chest = chest_init(renderer, "resources/sprites/chest-", 400, 375);
 
 
     // 1. Load Door Text
-    level->txt_door_texture = IMG_LoadTexture(renderer, "host0:/resources/ui/text_door.png");
+    level->txt_door_texture = IMG_LoadTexture(renderer, "resources/ui/text_door.png");
     if (level->txt_door_texture) {
         SDL_QueryTexture(level->txt_door_texture, NULL, NULL, &level->txt_door_w, &level->txt_door_h);
     } else {
@@ -132,7 +132,7 @@ void level_load(Level* level, SDL_Renderer* renderer, Player* player, const char
     }
 
     // 2. Load Chest Text
-    level->txt_chest_texture = IMG_LoadTexture(renderer, "host0:/resources/ui/text_chest.png");
+    level->txt_chest_texture = IMG_LoadTexture(renderer, "resources/ui/text_chest.png");
     if (level->txt_chest_texture) {
         SDL_QueryTexture(level->txt_chest_texture, NULL, NULL, &level->txt_chest_w, &level->txt_chest_h);
     } else {

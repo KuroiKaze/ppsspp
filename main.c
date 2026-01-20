@@ -34,7 +34,7 @@ SDL_Texture *load_texture(SDL_Renderer *renderer, const char *path)
 // --- Debug Logger ---
 void debug_log(const char *format, ...)
 {
-    FILE *fp = fopen("host0:/crash_log.txt", "a");
+    FILE *fp = fopen("crash_log.txt", "a");
     if (fp)
     {
         va_list args;

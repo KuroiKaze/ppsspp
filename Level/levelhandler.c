@@ -5,25 +5,25 @@ extern void debug_log(const char *format, ...);
 
 // Store texture configs for each level
 const char* level1_textures[] = {
-        "host0:/resources/levels/cemetery/tileset.png",
-        "host0:/resources/levels/cemetery/tower.png",
+        "resources/levels/cemetery/tileset.png",
+        "resources/levels/cemetery/tower.png",
 };
 
 BgConfig level1_bgs[] = {
-        {"host0:/resources/levels/cemetery/background.png", 0.05f, 1.0f}, // [0] Far
-        {"host0:/resources/levels/cemetery/mountains.png", 0.2f,  1.0f }, // [1] Mid
-        {"host0:/resources/levels/cemetery/graveyard.png", 0.5f,  1.0f}   // [2] Fore
+        {"resources/levels/cemetery/background.png", 0.05f, 1.0f}, // [0] Far
+        {"resources/levels/cemetery/mountains.png", 0.2f,  1.0f }, // [1] Mid
+        {"resources/levels/cemetery/graveyard.png", 0.5f,  1.0f}   // [2] Fore
 };
 
 const char* level2_textures[] = {
-        "host0:/resources/levels/castle/background.png",
-        "host0:/resources/levels/castle/tiles.png",
-        "host0:/resources/levels/castle/sprites.png"
+        "resources/levels/castle/background.png",
+        "resources/levels/castle/tiles.png",
+        "resources/levels/castle/sprites.png"
 };
 
 BgConfig level2_bgs[] = {
-        {"host0:/resources/levels/castle/back.png", 0.05f, 0.05f}, // [0] Far
-        {"host0:/resources/levels/castle/mid.png", 1.0f,  1.4f }, // [1] Mid
+        {"resources/levels/castle/back.png", 0.05f, 0.05f}, // [0] Far
+        {"resources/levels/castle/mid.png", 1.0f,  1.4f }, // [1] Mid
         {NULL, 0, 0} // NULL = No foreground layer for this level
 };
 
@@ -34,8 +34,8 @@ LevelHandler level_handler_init(SDL_Renderer* renderer, Player* player) {
     handler.current_level_index = 0;
     handler.total_levels = 2;
 
-    handler.map_paths[0] = "host0:/resources/maps/map_level1.json";
-    handler.map_paths[1] = "host0:/resources/maps/map_level2.json";
+    handler.map_paths[0] = "resources/maps/map_level1.json";
+    handler.map_paths[1] = "resources/maps/map_level2.json";
 
     debug_log("Handler: Loading Level 0...");
     level_load(&handler.current_level, renderer, player,

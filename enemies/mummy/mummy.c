@@ -34,7 +34,7 @@ Mummy mummy_init(SDL_Renderer *renderer, int x, int y) {
 
     mummy.attack_cooldown = 0;
 
-    entity->grunt_sfx = sfx_load("host0:/resources/sfx/animal-grunt-382728.wav");
+    entity->grunt_sfx = sfx_load("resources/sfx/animal-grunt-382728.wav");
 
     return mummy;
 }
