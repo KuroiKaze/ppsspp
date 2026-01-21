@@ -2,301 +2,246 @@
 #include <SDL_image.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h> // Added for fabs()
+#include "../map/map.h"
 
-#define PLAYER_IDLE_BASE_PATH "resources/Gothicvania Collection Files/Assets/Characters/PLAYABLE CHARACTERS/Cemetery Hero/Base/Sprites/hero-idle/hero-idle-"
-#define PLAYER_RUN_BASE_PATH "resources/Gothicvania Collection Files/Assets/Characters/PLAYABLE CHARACTERS/Cemetery Hero/Base/Sprites/hero-run/hero-run-"
-#define PLAYER_ATTACK_BASE_PATH "resources/Gothicvania Collection Files/Assets/Characters/PLAYABLE CHARACTERS/Cemetery Hero/Base/Sprites/hero-attack/frame"
-#define PLAYER_HURT_PATH "resources/Gothicvania Collection Files/Assets/Characters/PLAYABLE CHARACTERS/Cemetery Hero/Base/Sprites/hero-hurt/hero-hurt.png"
+#define PLAYER_ATTACK_BASE_PATH "resources/sprites/player/attack/frame"
+#define PLAYER_IDLE_BASE_PATH   "resources/sprites/player/idle/hero-idle-"
+#define PLAYER_RUN_BASE_PATH    "resources/sprites/player/run/hero-run-"
+#define PLAYER_HURT_BASE_PATH   "resources/sprites/player/hero-hurt.png"
+#define PLAYER_JUMP_BASE_PATH   "resources/sprites/player/jump/hero-jump-"
 
-extern SDL_Texture *load_texture(SDL_Renderer *renderer, const char *path); 
+extern SDL_Texture *load_texture(SDL_Renderer *renderer, const char *path);
+extern void debug_log(const char *format, ...);
 
-#define HIT_BOX_SCALE_W 0.3f 
+#define HIT_BOX_SCALE_W 0.3f
 #define HIT_BOX_SCALE_H 0.8f
-
-#define ATTACK_HITBOX_WIDTH 40 
+#define ATTACK_HITBOX_WIDTH  40
 #define ATTACK_HITBOX_HEIGHT 20
 #define ATTACK_HITBOX_OFFSET_Y 5
-#define ATTACK_OVERLAP 15 
+#define ATTACK_OVERLAP 15
 
-void player_cleanup_all_loaded(Player *player) {
-    for (int i = 0; i < IDLE_FRAME_COUNT; i++) {
-        if (player->idle_frames[i]) SDL_DestroyTexture(player->idle_frames[i]);
-    }
-    for (int i = 0; i < RUN_FRAME_COUNT; i++) {
-        if (player->running_frames[i]) SDL_DestroyTexture(player->running_frames[i]);
-    }
-    for (int i = 0; i < ATTACK_FRAME_COUNT; i++) {
-        if (player->attack_frames[i]) SDL_DestroyTexture(player->attack_frames[i]);
-    }
-    if (player->hurt_frame) SDL_DestroyTexture(player->hurt_frame);
+// Physics Tweaks
+#define ACCEL 0.4f
+#define FRICTION 0.7f
+#define GRAVITY 0.4f
+#define JUMP_FORCE 9.0f
+#define MAX_FALL_SPEED 10.0f
+#define ANIMATION_SPEED 85
+
+// -------------------------------------------------------------
+// Cleanup
+// -------------------------------------------------------------
+void player_cleanup(Player *player) {
+    entity_cleanup(&player->entity);
 }
 
-
+// -------------------------------------------------------------
+// Init
+// -------------------------------------------------------------
 Player player_init(SDL_Renderer *renderer) {
     Player player = {0};
-    Player failed_player = {0}; // Struktur für den Fehlerfall
-    char path_buffer[256];
+    Entity *e = &player.entity;
 
-    const char* asset_root = "host0:/";
-    
-    // idle sprites
-    for (int i = 0; i < IDLE_FRAME_COUNT; i++) {
-        sprintf(path_buffer, "%s%s%d.png", asset_root, PLAYER_IDLE_BASE_PATH, i + 1);
-        player.idle_frames[i] = load_texture(renderer, path_buffer);
-        if (!player.idle_frames[i]) {
-            fprintf(stderr, "Fehler: Idle Frame %d konnte nicht geladen werden (%s).\n", i + 1, path_buffer);
-            for (int j = 0; j <= i; j++) {
-                if (player.idle_frames[j]) SDL_DestroyTexture(player.idle_frames[j]);
-            }
-            return failed_player; 
-        }
-    }
+    if (!entity_load_frames(renderer, &e->idle, PLAYER_IDLE_BASE_PATH)) goto fail;
+    if (!entity_load_frames(renderer, &e->run, PLAYER_RUN_BASE_PATH)) goto fail;
+    if (!entity_load_frames(renderer, &e->attack, PLAYER_ATTACK_BASE_PATH)) goto fail;
+    if (!entity_load_frame(renderer, &e->hurt, PLAYER_HURT_BASE_PATH)) goto fail;
+    if (!entity_load_frames(renderer, &e->jump, PLAYER_JUMP_BASE_PATH)) goto fail;
 
-    // run sprites
-    for (int i = 0; i < RUN_FRAME_COUNT; i++) {
-        sprintf(path_buffer, "%s%s%d.png", asset_root, PLAYER_RUN_BASE_PATH, i + 1);
-        player.running_frames[i] = load_texture(renderer, path_buffer);
-        if (!player.running_frames[i]) {
-            fprintf(stderr, "Fehler: Running Frame %d konnte nicht geladen werden (%s).\n", i + 1, path_buffer);
-            player_cleanup_all_loaded(&player); 
-            return failed_player; 
-        }
-    }
-    
-    // attack sprites
-    for (int i = 0; i < ATTACK_FRAME_COUNT; i++) {
-        sprintf(path_buffer, "%s%s%d.png", asset_root, PLAYER_ATTACK_BASE_PATH, i + 1);
-        player.attack_frames[i] = load_texture(renderer, path_buffer);
-        if (!player.attack_frames[i]) {
-            fprintf(stderr, "Warnung: Attack Frame %d konnte nicht geladen werden (%s).\n", i + 1, path_buffer);
-            player_cleanup_all_loaded(&player); 
-            return failed_player;
-        }
-    }
-    
-    // hurt sprite
-    player.hurt_frame = load_texture(renderer, PLAYER_HURT_PATH);
-    if (!player.hurt_frame) {
-        fprintf(stderr, "Warnung: Hurt Frame konnte nicht geladen werden (%s).\n", PLAYER_HURT_PATH);
-    }
-    
-    SDL_QueryTexture(player.idle_frames[0], NULL, NULL, &player.sprite_w, &player.sprite_h);
-    
-    player.rect.w = (int)(player.sprite_w * HIT_BOX_SCALE_W);
-    player.rect.h = (int)(player.sprite_h * HIT_BOX_SCALE_H);
+    SDL_QueryTexture(e->idle.frames[0], NULL, NULL, &e->sprite_w, &e->sprite_h);
 
-    player.offset_x = (player.sprite_w - player.rect.w) / 2;
-    player.offset_y = player.sprite_h - player.rect.h; 
-    
-    int initial_sprite_x = (SCREEN_WIDTH / 2) - (player.sprite_w / 2);
-    int initial_sprite_y = (SCREEN_HEIGHT / 2) - (player.sprite_h / 2);
+    // Hitbox
+    e->rect.w = (int)(e->sprite_w * HIT_BOX_SCALE_W);
+    e->rect.h = (int)(e->sprite_h * HIT_BOX_SCALE_H);
 
-    player.rect.x = initial_sprite_x + player.offset_x;
-    player.rect.y = initial_sprite_y + player.offset_y;
-    
-    player.last_time = SDL_GetTicks();
-    player.flip_direction = SDL_FLIP_NONE; 
-    player.health = 100; 
-    player.hurt_timer_end = 0; 
+    e->offset_x = e->sprite_w / 2 - e->rect.w / 2;
+    e->offset_y = e->sprite_h - e->rect.h;
+
+    // Position
+    e->rect.x = 50;
+    e->rect.y = 50;
 
     player.attack_timer_end = 0;
     player.attack_cooldown_end = 0;
-    player.current_attack_frame = 0;
-    player.attack_rect = (SDL_Rect){0, 0, 0, 0}; // Initialisiere Attack-Hitbox als leer
+    player.hurt_timer_end = 0;
+    player.prev_buttons = 0;
+    e->last_time = SDL_GetTicks() - ANIMATION_SPEED;
+
+    e->health = PLAYER_MAX_HEALTH;
+    e->movement_speed = PLAYER_MOVEMENT_SPEED;
+    e->vel_x = 0;
+    e->vel_y = 0;
+    e->on_ground = 0;
+    e->flip_direction = SDL_FLIP_NONE;
+    e->last_time = SDL_GetTicks();
 
     return player;
+
+    fail:
+    entity_cleanup(e);
+    Player empty = {0};
+    return empty;
 }
 
-int player_handle_input(Player *player, const SceCtrlData *pad) {
-    int is_moving = 0;
+// -------------------------------------------------------------
+// Input Handling (FIXED)
+// -------------------------------------------------------------
+void player_handle_input(Player *player, const SceCtrlData *pad) {
+    Entity *e = &player->entity;
 
-    if (SDL_GetTicks() < player->attack_timer_end) {
-        return 0; 
+    // 1. Attack Freeze
+    if ((int)SDL_GetTicks() < (int)player->attack_timer_end) {
+        // Apply friction even while attacking so you slide to a stop
+        e->vel_x *= FRICTION;
+        if (fabs(e->vel_x) < 0.1f) e->vel_x = 0;
+        return;
     }
 
-    // NEU: Attacke (Kreis-Taste)
+    // 2. Start Attack
     if ((pad->Buttons & PSP_CTRL_CIRCLE) && SDL_GetTicks() >= player->attack_cooldown_end) {
         player->attack_timer_end = SDL_GetTicks() + ATTACK_DURATION;
         player->attack_cooldown_end = SDL_GetTicks() + ATTACK_COOLDOWN;
         player->current_attack_frame = 0;
-        return 0; 
+        // Don't kill velocity instantly, let friction handle it in the next frame
+        return;
     }
+
+    // 3. Movement (Acceleration / Friction)
+    // FIX: Removed "e->vel_x = 0;" here. We MUST preserve velocity between frames.
 
     if (pad->Buttons & PSP_CTRL_LEFT) {
-       if (player->rect.x > 0) {
-           player->rect.x -= MOVEMENT_SPEED;
-           is_moving = 1;
-           player->flip_direction = SDL_FLIP_HORIZONTAL;
-       }
+        e->vel_x -= ACCEL;
+        e->flip_direction = SDL_FLIP_HORIZONTAL;
     }
-    if (pad->Buttons & PSP_CTRL_RIGHT) {
-       if (player->rect.x + player->rect.w < SCREEN_WIDTH) {
-           player->rect.x += MOVEMENT_SPEED;
-           is_moving = 1;
-           player->flip_direction = SDL_FLIP_NONE;
-       }
+    else if (pad->Buttons & PSP_CTRL_RIGHT) {
+        e->vel_x += ACCEL;
+        e->flip_direction = SDL_FLIP_NONE;
     }
-    if (pad->Buttons & PSP_CTRL_UP) {
-       if (player->rect.y > 0) {
-           player->rect.y -= MOVEMENT_SPEED;
-           is_moving = 1;
-       }
-    }
-    if (pad->Buttons & PSP_CTRL_DOWN) {
-       if (player->rect.y + player->rect.h < SCREEN_HEIGHT) {
-           player->rect.y += MOVEMENT_SPEED;
-           is_moving = 1;
-       }
+    else {
+        // Friction: Slow down when no button is pressed
+        e->vel_x *= FRICTION;
+
+        // Snap to 0 to prevent micro-sliding
+        if (fabs(e->vel_x) < 0.1f) e->vel_x = 0;
     }
 
-    if (pad->Buttons & PSP_CTRL_LTRIGGER) {
-       player_decrease_health(player, 10);
+    // Cap the speed
+    if (e->vel_x > PLAYER_MOVEMENT_SPEED) e->vel_x = PLAYER_MOVEMENT_SPEED;
+    if (e->vel_x < -PLAYER_MOVEMENT_SPEED) e->vel_x = -PLAYER_MOVEMENT_SPEED;
+
+    // 4. Jump
+    int cross_just_pressed = (pad->Buttons & PSP_CTRL_CROSS) && !(player->prev_buttons & PSP_CTRL_CROSS);
+
+    if (cross_just_pressed && e->on_ground) {
+        e->vel_y = -JUMP_FORCE;
+        e->on_ground = 0;
     }
-    
-    return is_moving;
+    player->prev_buttons = pad->Buttons;
+
+    // Debug Damage
+    if (pad->Buttons & PSP_CTRL_LTRIGGER) {
+        player_decrease_health(player, 1);
+    }
 }
 
 void player_update_attack(Player *player) {
-    Uint32 current_time = SDL_GetTicks();
-    
-    if (current_time < player->attack_timer_end) {
-        Uint32 time_since_attack = current_time - (player->attack_timer_end - ATTACK_DURATION);
-        int frame_duration = ATTACK_DURATION / ATTACK_FRAME_COUNT;
-        
-        player->current_attack_frame = time_since_attack / frame_duration;
-        if (player->current_attack_frame >= ATTACK_FRAME_COUNT) {
-            player->current_attack_frame = ATTACK_FRAME_COUNT - 1;
+    Uint32 t = SDL_GetTicks();
+    if (t >= player->attack_timer_end) {
+        player->attack_rect = (SDL_Rect){0,0,0,0};
+        player->attack_sfx_played = false;
+        return;
+    }
+
+    Uint32 time_since_attack = t - (player->attack_timer_end - ATTACK_DURATION);
+    int frame_duration = ATTACK_DURATION / player->entity.attack.count;
+    player->current_attack_frame = time_since_attack / frame_duration;
+    if (player->current_attack_frame >= player->entity.attack.count)
+        player->current_attack_frame = player->entity.attack.count - 1;
+
+    // Hitbox
+    if (player->current_attack_frame == 1) {
+        if (!player->attack_sfx_played) {
+            sfx_play(player->entity.attack_sfx, 0);
+            player->attack_sfx_played = true;
         }
-        
-        // Attack-Hitbox setzen (nur während des aktiven Frames, um Hit-Spam zu verhindern)
-        if (player->current_attack_frame == 1) { 
-            // Position der Hitbox relativ zur Player-Hitbox
-            if (player->flip_direction == SDL_FLIP_NONE) { // Schaut nach rechts
-                // NEUE LOGIK: Beginnt 15px VOR der rechten Kante der Spieler-Hitbox, um Überlappung zu erzeugen
-                player->attack_rect.x = player->rect.x + player->rect.w - ATTACK_OVERLAP; 
-            } else { // Schaut nach links
-                player->attack_rect.x = (player->rect.x + ATTACK_OVERLAP) - ATTACK_HITBOX_WIDTH; 
-            }
-            
-            player->attack_rect.y = player->rect.y + player->rect.h / 2 - ATTACK_HITBOX_HEIGHT / 2 + ATTACK_HITBOX_OFFSET_Y;
-            player->attack_rect.w = ATTACK_HITBOX_WIDTH;
-            player->attack_rect.h = ATTACK_HITBOX_HEIGHT;
+
+        if (player->entity.flip_direction == SDL_FLIP_NONE) {
+            player->attack_rect.x = player->entity.rect.x + player->entity.rect.w - ATTACK_OVERLAP;
         } else {
-             // Hitbox zurücksetzen, wenn nicht im aktiven Frame
-            player->attack_rect = (SDL_Rect){0, 0, 0, 0};
+            player->attack_rect.x = (player->entity.rect.x + ATTACK_OVERLAP) - ATTACK_HITBOX_WIDTH;
         }
-        
+        player->attack_rect.y = player->entity.rect.y + player->entity.rect.h / 2 - ATTACK_HITBOX_HEIGHT/2 + ATTACK_HITBOX_OFFSET_Y;
+        player->attack_rect.w = ATTACK_HITBOX_WIDTH;
+        player->attack_rect.h = ATTACK_HITBOX_HEIGHT;
+
     } else {
-        // Angriff ist vorbei
-        player->attack_rect = (SDL_Rect){0, 0, 0, 0};
-    }
-}
-
-void player_update_animation(Player *player, int is_moving) {
-    if (SDL_GetTicks() < player->attack_timer_end) {
-        return; 
-    }
-
-    Uint32 current_time = SDL_GetTicks();
-    if (current_time > player->last_time + ANIMATION_SPEED) {
-        if (is_moving) {
-            player->current_run_frame = (player->current_run_frame + 1) % RUN_FRAME_COUNT; 
-        } else {
-            player->current_idle_frame = (player->current_idle_frame + 1) % IDLE_FRAME_COUNT; 
-        }
-        player->last_time = current_time;
+        player->attack_rect = (SDL_Rect){0,0,0,0};
     }
 }
 
 void player_decrease_health(Player *player, int amount) {
-    if (SDL_GetTicks() < player->hurt_timer_end) {
-        return;
-    }
-    
-    player->health -= amount;
+    if (SDL_GetTicks() < player->hurt_timer_end) return;
+    player->entity.health -= amount;
     player->hurt_timer_end = SDL_GetTicks() + HURT_DURATION;
-    
-    if (player->health < 0) {
-        player->health = 0;
-        // Handle Death
-    }
+    if (player->entity.health < 0) player->entity.health = 0;
 }
 
-void player_render(SDL_Renderer *renderer, Player *player, int is_moving) {
+void player_update_animation(Player *player, int is_moving) {
+    entity_update_animation(&player->entity, is_moving, ANIMATION_SPEED);
+}
+
+void player_update_physics(Player *p, struct Map *map){
+    entity_update_physics(&p->entity, map, GRAVITY, MAX_FALL_SPEED);
+}
+
+void player_render(SDL_Renderer *renderer, Player *player, int is_moving, int camera_x, int camera_y) {
+    Entity *e = &player->entity;
     SDL_Texture *current_texture = NULL;
-    Uint32 current_ticks = SDL_GetTicks();
-    
-    SDL_Texture *base_texture = NULL;
-    
-    if (current_ticks < player->attack_timer_end) {
-        base_texture = player->attack_frames[player->current_attack_frame];
+    Uint32 t = SDL_GetTicks();
+
+    if (!e->on_ground && e->jump.count > 0) {
+        current_texture = e->jump.frames[e->current_jump_frame];
     }
-    else if (current_ticks < player->hurt_timer_end) {
-        base_texture = player->hurt_frame ? player->hurt_frame : 
-                       (is_moving ? player->running_frames[player->current_run_frame] : 
-                                    player->idle_frames[player->current_idle_frame]);
-    } else {
-        base_texture = is_moving ? 
-                       player->running_frames[player->current_run_frame] : 
-                       player->idle_frames[player->current_idle_frame];
+    else if (SDL_GetTicks() < player->attack_timer_end && e->attack.count > 0) {
+        current_texture = e->attack.frames[player->current_attack_frame];
     }
-
-    if (!base_texture) return;
-
-    SDL_Rect render_rect = {
-        player->rect.x - player->offset_x, 
-        player->rect.y - player->offset_y, 
-        player->sprite_w,                  
-        player->sprite_h                   
-    };
-
-
-    // 3. **WICHTIG:** Alle Texturen auf Normal zurücksetzen 
-    if (base_texture) SDL_SetTextureColorMod(base_texture, 255, 255, 255);
-
-    // 4. **Färben:** Nur die BASE_TEXTURE färben, falls Hurt-Timer aktiv
-    if (current_ticks < player->hurt_timer_end) {
-        if (current_ticks % 100 < 50) { 
-            // 50ms Rot
-            SDL_SetTextureColorMod(base_texture, 255, 100, 100);
-        } else {
-            // 50ms Normal (Weiß)
-            SDL_SetTextureColorMod(base_texture, 255, 255, 255);
+    else if (SDL_GetTicks() < player->hurt_timer_end && e->hurt.count > 0) {
+        current_texture = e->hurt.frames[0];
+    }
+    else {
+        if (is_moving && e->run.count > 0) {
+            current_texture = e->run.frames[e->current_run_frame];
+        } else if (!is_moving && e->idle.count > 0) {
+            current_texture = e->idle.frames[e->current_idle_frame];
         }
     }
-    
-    current_texture = base_texture;
-    
-    if (current_texture) {
-        SDL_RenderCopyEx(
-            renderer, 
-            current_texture, 
-            NULL, 
-            &render_rect, 
-            0.0,         
-            NULL,        
-            player->flip_direction 
-        );
+
+    if (!current_texture) return;
+
+    SDL_Rect render_rect = {
+            e->rect.x - e->offset_x - camera_x,
+            e->rect.y - e->offset_y - camera_y,
+            e->sprite_w,
+            e->sprite_h
+    };
+
+    // --- Hurt Blinking ---
+    SDL_SetTextureColorMod(current_texture, 255, 255, 255);
+    if (t < player->hurt_timer_end && t % 100 < 50) {
+        SDL_SetTextureColorMod(current_texture, 255, 100, 100);
     }
 
-    // --- 6. DEBUG: Blaue Box um die Kollisionsbox (Hitbox) zeichnen ---
-    SDL_Color original_color;
-    SDL_GetRenderDrawColor(renderer, &original_color.r, &original_color.g, &original_color.b, &original_color.a);
+    SDL_RenderCopyEx(renderer, current_texture, NULL, &render_rect, 0.0, NULL, e->flip_direction);
 
-    // Zeichne Player Hitbox (Blau)
-    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255); 
-    SDL_RenderDrawRect(renderer, &player->rect);
-    
-    // NEU: Zeichne Attack Hitbox (Grün) - sollte jetzt näher am Spieler sein
-    if (player->attack_rect.w > 0) {
-        SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); 
-        SDL_RenderDrawRect(renderer, &player->attack_rect);
-    }
-    
-    // Setzt die Farbe zurück
-    SDL_SetRenderDrawColor(renderer, original_color.r, original_color.g, original_color.b, original_color.a);
-}
-
-void player_cleanup(Player *player) {
-    player_cleanup_all_loaded(player);
+#ifdef DEBUG_DRAW_HITBOX
+    Uint8 old_r, old_g, old_b, old_a;
+    SDL_GetRenderDrawColor(renderer, &old_r, &old_g, &old_b, &old_a);
+    SDL_Rect debug_rect = e->rect;
+    debug_rect.x -= camera_x;
+    debug_rect.y -= camera_y;
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    SDL_RenderDrawRect(renderer, &debug_rect);
+    SDL_SetRenderDrawColor(renderer, old_r, old_g, old_b, old_a);
+#endif
 }

@@ -6,3 +6,49 @@
 # Datasource local storage ignored files
 /dataSources/
 /dataSources.local.xml
+
+# --- CLion / IDE Specifics ---
+.idea/
+cmake-build-*/
+.vscode/
+*.swp
+*.swo
+
+# --- CMake Generated Files ---
+../CMakeCache.txt
+../CMakeFiles/
+cmake_install.cmake
+../Makefile
+../CTestTestfile.cmake
+Testing/
+
+# --- Compilation Outputs (Standard) ---
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dll
+*.dylib
+*.exe
+*.out
+*.app
+
+# --- PSP Compilation Intermediates ---
+# Often generated if you run 'make' manually
+*.map
+*.lst
+*.d
+
+# --- OS Specific ---
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# --- Safety Net for Assets ---
+# Just in case you have temporary design files you don't want committed
+*.psd
+*.xcf
+
+# -- other stuff --
+../crash_log.txt

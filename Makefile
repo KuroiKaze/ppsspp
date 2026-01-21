@@ -129,6 +129,54 @@ retro_game/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/build
 .PHONY : retro_game/fast
 
+background/background.obj: background/background.c.obj
+.PHONY : background/background.obj
+
+# target to build an object file
+background/background.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/background/background.c.obj
+.PHONY : background/background.c.obj
+
+background/background.i: background/background.c.i
+.PHONY : background/background.i
+
+# target to preprocess a source file
+background/background.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/background/background.c.i
+.PHONY : background/background.c.i
+
+background/background.s: background/background.c.s
+.PHONY : background/background.s
+
+# target to generate assembly for a file
+background/background.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/background/background.c.s
+.PHONY : background/background.c.s
+
+bgm/bgmHandler.obj: bgm/bgmHandler.c.obj
+.PHONY : bgm/bgmHandler.obj
+
+# target to build an object file
+bgm/bgmHandler.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/bgm/bgmHandler.c.obj
+.PHONY : bgm/bgmHandler.c.obj
+
+bgm/bgmHandler.i: bgm/bgmHandler.c.i
+.PHONY : bgm/bgmHandler.i
+
+# target to preprocess a source file
+bgm/bgmHandler.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/bgm/bgmHandler.c.i
+.PHONY : bgm/bgmHandler.c.i
+
+bgm/bgmHandler.s: bgm/bgmHandler.c.s
+.PHONY : bgm/bgmHandler.s
+
+# target to generate assembly for a file
+bgm/bgmHandler.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/bgm/bgmHandler.c.s
+.PHONY : bgm/bgmHandler.c.s
+
 enemies/enemy.obj: enemies/enemy.c.obj
 .PHONY : enemies/enemy.obj
 
@@ -153,6 +201,150 @@ enemies/enemy.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/enemies/enemy.c.s
 .PHONY : enemies/enemy.c.s
 
+enemies/mummy/mummy.obj: enemies/mummy/mummy.c.obj
+.PHONY : enemies/mummy/mummy.obj
+
+# target to build an object file
+enemies/mummy/mummy.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/enemies/mummy/mummy.c.obj
+.PHONY : enemies/mummy/mummy.c.obj
+
+enemies/mummy/mummy.i: enemies/mummy/mummy.c.i
+.PHONY : enemies/mummy/mummy.i
+
+# target to preprocess a source file
+enemies/mummy/mummy.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/enemies/mummy/mummy.c.i
+.PHONY : enemies/mummy/mummy.c.i
+
+enemies/mummy/mummy.s: enemies/mummy/mummy.c.s
+.PHONY : enemies/mummy/mummy.s
+
+# target to generate assembly for a file
+enemies/mummy/mummy.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/enemies/mummy/mummy.c.s
+.PHONY : enemies/mummy/mummy.c.s
+
+enemies/slime/slime.obj: enemies/slime/slime.c.obj
+.PHONY : enemies/slime/slime.obj
+
+# target to build an object file
+enemies/slime/slime.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/enemies/slime/slime.c.obj
+.PHONY : enemies/slime/slime.c.obj
+
+enemies/slime/slime.i: enemies/slime/slime.c.i
+.PHONY : enemies/slime/slime.i
+
+# target to preprocess a source file
+enemies/slime/slime.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/enemies/slime/slime.c.i
+.PHONY : enemies/slime/slime.c.i
+
+enemies/slime/slime.s: enemies/slime/slime.c.s
+.PHONY : enemies/slime/slime.s
+
+# target to generate assembly for a file
+enemies/slime/slime.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/enemies/slime/slime.c.s
+.PHONY : enemies/slime/slime.c.s
+
+entity/entity.obj: entity/entity.c.obj
+.PHONY : entity/entity.obj
+
+# target to build an object file
+entity/entity.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/entity/entity.c.obj
+.PHONY : entity/entity.c.obj
+
+entity/entity.i: entity/entity.c.i
+.PHONY : entity/entity.i
+
+# target to preprocess a source file
+entity/entity.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/entity/entity.c.i
+.PHONY : entity/entity.c.i
+
+entity/entity.s: entity/entity.c.s
+.PHONY : entity/entity.s
+
+# target to generate assembly for a file
+entity/entity.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/entity/entity.c.s
+.PHONY : entity/entity.c.s
+
+interactables/chest.obj: interactables/chest.c.obj
+.PHONY : interactables/chest.obj
+
+# target to build an object file
+interactables/chest.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/interactables/chest.c.obj
+.PHONY : interactables/chest.c.obj
+
+interactables/chest.i: interactables/chest.c.i
+.PHONY : interactables/chest.i
+
+# target to preprocess a source file
+interactables/chest.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/interactables/chest.c.i
+.PHONY : interactables/chest.c.i
+
+interactables/chest.s: interactables/chest.c.s
+.PHONY : interactables/chest.s
+
+# target to generate assembly for a file
+interactables/chest.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/interactables/chest.c.s
+.PHONY : interactables/chest.c.s
+
+level/level.obj: level/level.c.obj
+.PHONY : level/level.obj
+
+# target to build an object file
+level/level.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/level/level.c.obj
+.PHONY : level/level.c.obj
+
+level/level.i: level/level.c.i
+.PHONY : level/level.i
+
+# target to preprocess a source file
+level/level.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/level/level.c.i
+.PHONY : level/level.c.i
+
+level/level.s: level/level.c.s
+.PHONY : level/level.s
+
+# target to generate assembly for a file
+level/level.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/level/level.c.s
+.PHONY : level/level.c.s
+
+level/levelhandler.obj: level/levelhandler.c.obj
+.PHONY : level/levelhandler.obj
+
+# target to build an object file
+level/levelhandler.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/level/levelhandler.c.obj
+.PHONY : level/levelhandler.c.obj
+
+level/levelhandler.i: level/levelhandler.c.i
+.PHONY : level/levelhandler.i
+
+# target to preprocess a source file
+level/levelhandler.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/level/levelhandler.c.i
+.PHONY : level/levelhandler.c.i
+
+level/levelhandler.s: level/levelhandler.c.s
+.PHONY : level/levelhandler.s
+
+# target to generate assembly for a file
+level/levelhandler.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/level/levelhandler.c.s
+.PHONY : level/levelhandler.c.s
+
 main.obj: main.c.obj
 .PHONY : main.obj
 
@@ -176,6 +368,30 @@ main.s: main.c.s
 main.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/main.c.s
 .PHONY : main.c.s
+
+map/map.obj: map/map.c.obj
+.PHONY : map/map.obj
+
+# target to build an object file
+map/map.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/map/map.c.obj
+.PHONY : map/map.c.obj
+
+map/map.i: map/map.c.i
+.PHONY : map/map.i
+
+# target to preprocess a source file
+map/map.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/map/map.c.i
+.PHONY : map/map.c.i
+
+map/map.s: map/map.c.s
+.PHONY : map/map.s
+
+# target to generate assembly for a file
+map/map.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/retro_game.dir/build.make CMakeFiles/retro_game.dir/map/map.c.s
+.PHONY : map/map.c.s
 
 player/player.obj: player/player.c.obj
 .PHONY : player/player.obj
@@ -234,12 +450,39 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... retro_game"
+	@echo "... background/background.obj"
+	@echo "... background/background.i"
+	@echo "... background/background.s"
+	@echo "... bgm/bgmHandler.obj"
+	@echo "... bgm/bgmHandler.i"
+	@echo "... bgm/bgmHandler.s"
 	@echo "... enemies/enemy.obj"
 	@echo "... enemies/enemy.i"
 	@echo "... enemies/enemy.s"
+	@echo "... enemies/mummy/mummy.obj"
+	@echo "... enemies/mummy/mummy.i"
+	@echo "... enemies/mummy/mummy.s"
+	@echo "... enemies/slime/slime.obj"
+	@echo "... enemies/slime/slime.i"
+	@echo "... enemies/slime/slime.s"
+	@echo "... entity/entity.obj"
+	@echo "... entity/entity.i"
+	@echo "... entity/entity.s"
+	@echo "... interactables/chest.obj"
+	@echo "... interactables/chest.i"
+	@echo "... interactables/chest.s"
+	@echo "... level/level.obj"
+	@echo "... level/level.i"
+	@echo "... level/level.s"
+	@echo "... level/levelhandler.obj"
+	@echo "... level/levelhandler.i"
+	@echo "... level/levelhandler.s"
 	@echo "... main.obj"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... map/map.obj"
+	@echo "... map/map.i"
+	@echo "... map/map.s"
 	@echo "... player/player.obj"
 	@echo "... player/player.i"
 	@echo "... player/player.s"
