@@ -4,6 +4,7 @@
 #include "../enemies/slime/slime.h"
 #include "../ui/ui.h"
 #include "../bgm/bgmHandler.h"
+#include "../items/item.h"
 
 #define MAX_ENEMIES 5
 
@@ -118,9 +119,14 @@ void level_load(Level* level, SDL_Renderer* renderer, Player* player, const char
     }
 
     level_scan_entities(level, renderer);
-// Chest
+    // Chest
     level->chest_spawned = false;
-    level->loot_chest = chest_init(renderer, "resources/sprites/chest-", 400, 375);
+
+    // item / loot
+    Item health_potion; 
+    health_potion.type = HEALTH_POTION;
+    health_potion.amount = 3; // Ein Heiltrank im Chest
+    level->loot_chest = chest_init(renderer, "resources/sprites/chest-", 400, 375, health_potion);
 
 
     // 1. Load Door Text
@@ -199,9 +205,11 @@ void level_update(Level* level, SceCtrlData* pad, SDL_Renderer* renderer) {
                 level->loot_chest.opening = true;
                 level->loot_chest.current_frame = 0;
                 level->loot_chest.last_frame_time = SDL_GetTicks();
+                add_loot_to_player(&level->loot_chest, player);
             }
         }
         chest_update(&level->loot_chest);
+
     }
 }
 
@@ -226,7 +234,7 @@ void level_render(Level* level, SDL_Renderer* renderer, int camera_x, int camera
     int is_moving = (player->entity.vel_x != 0);
     player_render(renderer, player, is_moving, camera_x, camera_y);
 
-// 5. Chest & Interaction UI
+    // 5. Chest & Interaction UI
     if (level->chest_spawned && !level->loot_chest.collected) {
         chest_render(renderer, &level->loot_chest, camera_x, camera_y);
 
@@ -244,8 +252,9 @@ void level_render(Level* level, SDL_Renderer* renderer, int camera_x, int camera
         }
     }
 
-    // 6. UI Health
+    // 6. UI 
     ui_render_health_bar(renderer, player->entity.health);
+    ui_render_inventory(renderer, player->inventory, player->inventory_count);
 
 // 7. Door Indicator
     int check_x = player->entity.rect.x + (player->entity.rect.w / 2);

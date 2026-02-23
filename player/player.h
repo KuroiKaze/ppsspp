@@ -4,6 +4,7 @@
 #include <SDL.h>
 #include <pspctrl.h>
 #include "../entity/entity.h"
+#include "../items/item.h"
 
 #define PLAYER_MAX_HEALTH 100
 #define PLAYER_MOVEMENT_SPEED 3.0f
@@ -14,6 +15,7 @@
 #define ATTACK_HITBOX_HEIGHT 20
 #define ATTACK_HITBOX_OFFSET_Y 5
 #define ATTACK_OVERLAP 15
+#define MAX_INVENTORY 5
 
 struct Map;
 
@@ -26,6 +28,8 @@ typedef struct Player {
     Uint32 prev_buttons;
     SDL_Rect attack_rect;
     bool attack_sfx_played;
+    Item inventory[MAX_INVENTORY];
+    int inventory_count; // item counter in inventory / pointer to next free slot
 
 } Player;
 
@@ -37,5 +41,7 @@ void player_decrease_health(Player *player, int amount);
 void player_update_animation(Player *player, int is_moving);
 void player_render(SDL_Renderer *renderer, Player *player, int is_moving, int camera_x, int camera_y);
 void player_cleanup(Player *player);
+
+void player_consume_item(Player *player, int inventory_index);
 
 #endif

@@ -15,7 +15,7 @@ static bool chest_frame_exists(const char *path) {
     return access(path, F_OK) != -1;
 }
 
-Chest chest_init(SDL_Renderer *renderer, const char *base_path, int x, int y) {
+Chest chest_init(SDL_Renderer *renderer, const char *base_path, int x, int y, Item loot) {
     Chest chest = {0};
     chest.rect.x = x;
     chest.rect.y = y;
@@ -45,8 +45,9 @@ Chest chest_init(SDL_Renderer *renderer, const char *base_path, int x, int y) {
         }
     }
 
-    if (chest.frames.frames[0])
-        SDL_QueryTexture(chest.frames.frames[0], NULL, NULL, &chest.rect.w, &chest.rect.h);
+    if (chest.frames.frames[0]) SDL_QueryTexture(chest.frames.frames[0], NULL, NULL, &chest.rect.w, &chest.rect.h);
+
+    chest.loot = item_init(renderer, loot, x, y);
 
     return chest;
 }
@@ -88,4 +89,25 @@ void chest_cleanup(Chest *chest) {
     free(chest->frames.frames);
     chest->frames.frames = NULL;
     chest->frames.count = 0;
+}
+
+void add_loot_to_player(Chest *chest, Player *player) {
+    if (!chest || !player) return;
+
+    // found in inventory, just stack
+    for (int i = 0; i < player->inventory_count; i++) {
+        if (player->inventory[i].type == chest->loot.type) {
+            player->inventory[i].amount += chest->loot.amount;
+            printf("Item gestapelt! Anzahl: %d\n", player->inventory[i].amount);
+            return;
+        }
+    }
+
+    // not found, add new item if there's space
+    if (player->inventory_count < MAX_INVENTORY) {
+        player->inventory[player->inventory_count] = chest->loot;
+        player->inventory[player->inventory_count].amount = chest->loot.amount;
+        player->inventory_count++;
+        chest->collected = true;
+    }
 }

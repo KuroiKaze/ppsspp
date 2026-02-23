@@ -13,6 +13,7 @@ add_executable(${PROJECT_NAME} main.c player/player.c
     level/levelhandler.c
     interactables/chest.c
     bgm/bgmHandler.c
+    items/item.c
     )
 
 include(FindPkgConfig)

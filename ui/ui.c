@@ -46,3 +46,38 @@ void ui_render_health_bar(SDL_Renderer *renderer, int current_health) {
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); 
     SDL_RenderDrawRect(renderer, &background_rect);
 }
+
+void ui_render_inventory(SDL_Renderer *renderer, Item inventory[], int count) {
+    int slot_size = 32; 
+    int padding = 8;
+    int start_x = UI_BAR_X;
+    int start_y = UI_BAR_Y + UI_BAR_H + 15;
+
+    for (int i = 0; i < count; i++) {
+        SDL_Rect slot_rect = { start_x + (slot_size + padding) * i, start_y, slot_size, slot_size };
+
+        // Hintergrund & Icon
+        SDL_SetRenderDrawColor(renderer, 40, 40, 40, 200);
+        SDL_RenderFillRect(renderer, &slot_rect);
+        
+        if (inventory[i].texture) {
+            SDL_RenderCopy(renderer, inventory[i].texture, NULL, &slot_rect);
+        }
+
+        // STACK-COUNTER: Kleine gelbe Balken für die Anzahl
+        // Wir zeichnen für jedes Item im Stapel einen 4x2 Pixel Block
+        for (int n = 0; n < inventory[i].amount; n++) {
+            SDL_Rect stack_dot = {
+                slot_rect.x + 2 + (n * 5), // Versatz nach rechts
+                slot_rect.y + slot_size - 6, // Am unteren Rand des Slots
+                4, 2
+            };
+            SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255); // Gelb
+            SDL_RenderFillRect(renderer, &stack_dot);
+        }
+
+        // Rahmen
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        SDL_RenderDrawRect(renderer, &slot_rect);
+    }
+}

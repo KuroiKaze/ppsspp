@@ -34,6 +34,12 @@ extern void debug_log(const char *format, ...);
 // -------------------------------------------------------------
 void player_cleanup(Player *player) {
     entity_cleanup(&player->entity);
+    for (int i = 0; i < player->inventory_count; i++) {
+        if (player->inventory[i].texture) {
+            SDL_DestroyTexture(player->inventory[i].texture);
+            player->inventory[i].texture = NULL;
+        }
+    }
 }
 
 // -------------------------------------------------------------
@@ -105,6 +111,12 @@ void player_handle_input(Player *player, const SceCtrlData *pad) {
         player->current_attack_frame = 0;
         // Don't kill velocity instantly, let friction handle it in the next frame
         return;
+    }
+
+    int triangle_just_pressed = (pad->Buttons & PSP_CTRL_TRIANGLE) && !(player->prev_buttons & PSP_CTRL_TRIANGLE);
+    
+    if (triangle_just_pressed && player->inventory_count > 0) {
+        player_consume_item(player, 0);
     }
 
     // 3. Movement (Acceleration / Friction)
@@ -193,6 +205,27 @@ void player_update_animation(Player *player, int is_moving) {
 
 void player_update_physics(Player *p, struct Map *map){
     entity_update_physics(&p->entity, map, GRAVITY, MAX_FALL_SPEED);
+}
+
+void player_consume_item(Player *player, int index) {
+    if (index < 0 || index >= player->inventory_count) return;
+
+    // Effekt anwenden
+    item_use(&player->inventory[index], player);
+
+    // Anzahl verringern
+    player->inventory[index].amount--;
+
+    // Wenn Stapel leer ist, Slot entfernen
+    if (player->inventory[index].amount <= 0) {
+        item_cleanup(&player->inventory[index]);
+        
+        // Nachrücken im Array
+        for (int i = index; i < player->inventory_count - 1; i++) {
+            player->inventory[i] = player->inventory[i + 1];
+        }
+        player->inventory_count--;
+    }
 }
 
 void player_render(SDL_Renderer *renderer, Player *player, int is_moving, int camera_x, int camera_y) {
