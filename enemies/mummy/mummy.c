@@ -9,8 +9,13 @@
 
 Mummy mummy_init(SDL_Renderer *renderer, int x, int y) {
     Mummy mummy = {0};
-    Enemy *base = &mummy.base;
+    Enemy *base = &mummy.base.base;
     Entity *entity = &base->entity;
+    base->attack_type = MELEE;
+    entity->health = MUMMY_MAX_HEALTH;
+    base->max_health = MUMMY_MAX_HEALTH;
+    base->damage = MUMMY_DAMAGE;
+    base->detection_range = MELEE_DETECTION_RANGE;
 
     entity_load_frames(renderer, &entity->idle, IDLE_BASE_PATH);
     entity_load_frames(renderer, &entity->run, RUN_BASE_PATH);
@@ -28,7 +33,7 @@ Mummy mummy_init(SDL_Renderer *renderer, int x, int y) {
     entity->offset_x = (entity->sprite_w - entity->rect.w) / 2;
     entity->offset_y = entity->sprite_h - entity->rect.h;
 
-    entity->health = ENEMY_MAX_HEALTH;
+    entity->health = MUMMY_MAX_HEALTH;
     entity->last_time = SDL_GetTicks();
     entity->flip_direction = SDL_FLIP_NONE;
 

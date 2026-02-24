@@ -1,12 +1,16 @@
 #ifndef MUMMY_H
 #define MUMMY_H
 
-#include "../enemy.h"
+#include "../melee.h"
 #include <SDL.h>
 
+#define MUMMY_MAX_HEALTH 40
+#define MELEE_ATTACK_RANGE 25
+#define MUMMY_DAMAGE 15
+
 typedef struct Mummy {
-    Enemy base;  // „Vererbung“: Mummy ist ein Enemy
-    int attack_cooldown; // Beispiel für mummy-spezifische Logik
+    MeleeEnemy base;
+    int attack_cooldown;
 } Mummy;
 
 Mummy mummy_init(SDL_Renderer *renderer, int x, int y);
