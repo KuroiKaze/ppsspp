@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "../enemies/mummy/mummy.h"
 #include "../enemies/slime/slime.h"
+#include "../enemies/shurikenDude/shurikenDude.h"
 #include "../ui/ui.h"
 #include "../bgm/bgmHandler.h"
 #include "../items/item.h"
@@ -73,25 +74,35 @@ void level_scan_entities(Level* level, SDL_Renderer* renderer) {
                 *m = mummy_init(renderer, world_x, world_y); // Init first to load dimensions
 
                 // Adjust Y based on the loaded enemy height
-                m->base.entity.rect.y = (world_y + 16) - m->base.entity.rect.h - 2;
+                m->base.base.entity.rect.y = (world_y + 16) - m->base.base.entity.rect.h - 2;
 
                 // Update the spawn_y memory so resets work correctly
-                m->base.spawn_x = m->base.entity.rect.x;
-                m->base.spawn_y = m->base.entity.rect.y;
-
-                level->enemies[enemy_idx++] = &m->base;
+                m->base.base.spawn_x = m->base.base.entity.rect.x;
+                m->base.base.spawn_y = m->base.base.entity.rect.y;
+                level->enemies[enemy_idx++] = &m->base.base; 
             }
             else if (shape == SHAPE_SLIME_SPAWN) {
-                Slime* s = malloc(sizeof(Slime));
+                /* Slime* s = malloc(sizeof(Slime));
                 *s = slime_init(renderer, world_x, world_y);
 
                 // Adjust Y based on the loaded enemy height
-                s->base.entity.rect.y = (world_y + 16) - s->base.entity.rect.h - 2;
+                s->base.base.entity.rect.y = (world_y + 16) - s->base.base.entity.rect.h - 2;
 
-                s->base.spawn_x = s->base.entity.rect.x;
-                s->base.spawn_y = s->base.entity.rect.y;
+                s->base.base.spawn_x = s->base.base.entity.rect.x;
+                s->base.base.spawn_y = s->base.base.entity.rect.y;
 
-                level->enemies[enemy_idx++] = &s->base;
+                level->enemies[enemy_idx++] = &s->base.base; */
+
+                ShurikenDude* m = malloc(sizeof(ShurikenDude));
+                *m = shurikenDude_init(renderer, world_x, world_y); // Init first to load dimensions
+
+                // Adjust Y based on the loaded enemy height
+                m->base.base.entity.rect.y = (world_y + 16) - m->base.base.entity.rect.h - 2;
+
+                // Update the spawn_y memory so resets work correctly
+                m->base.base.spawn_x = m->base.base.entity.rect.x;
+                m->base.base.spawn_y = m->base.base.entity.rect.y;
+                level->enemies[enemy_idx++] = &m->base.base;
             }
         }
     }
@@ -125,7 +136,8 @@ void level_load(Level* level, SDL_Renderer* renderer, Player* player, const char
     // item / loot
     Item health_potion; 
     health_potion.type = HEALTH_POTION;
-    health_potion.amount = 3; // Ein Heiltrank im Chest
+    health_potion.amount = 3; // 3x healing potion in chest
+    
     level->loot_chest = chest_init(renderer, "resources/sprites/chest-", 400, 375, health_potion);
 
 
@@ -191,6 +203,11 @@ void level_update(Level* level, SceCtrlData* pad, SDL_Renderer* renderer) {
         enemy_take_damage_from_player(e, player->attack_rect, 10);
         enemy_update(e, player, &level->map);
         enemy_handle_attack(e, player);
+
+        if (e->attack_type == RANGED) { // move projectiles of ranged enemies towards player
+            RangedEnemy* re = (RangedEnemy*)e;
+            projectiles_update(re->projectiles, player);
+        }
     }
 
     if (all_enemies_dead(level) && !level->chest_spawned) {
@@ -228,6 +245,11 @@ void level_render(Level* level, SDL_Renderer* renderer, int camera_x, int camera
     // 3. Enemies
     for(int i = 0; i < level->enemy_count; i++) {
         enemy_render(renderer, level->enemies[i], camera_x, camera_y);
+
+        if (level->enemies[i]->attack_type == RANGED) { // render proctiles of ranged enemies
+        RangedEnemy* re = (RangedEnemy*)level->enemies[i];
+        projectiles_render(renderer, re->projectiles, camera_x, camera_y);
+    }
     }
 
     // 4. Player
@@ -283,7 +305,7 @@ void level_reset(Level* level) {
     player->entity.vel_y = 0;
 
     for (int i = 0; i < level->enemy_count; i++) {
-        level->enemies[i]->entity.health = ENEMY_MAX_HEALTH;
+        level->enemies[i]->entity.health = level->enemies[i]->max_health;
         level->enemies[i]->entity.rect.x = level->enemies[i]->spawn_x;
         level->enemies[i]->entity.rect.y = level->enemies[i]->spawn_y;
         level->enemies[i]->is_moving = 0;
@@ -298,6 +320,9 @@ void level_cleanup(Level* level) {
     bgm_cleanup(&bgm);
 
     for(int i = 0; i < level->enemy_count; i++) {
+        if (level->enemies[i]->attack_type == RANGED) {
+            projectile_sprite_cleanup((RangedEnemy*)level->enemies[i]);
+        }
         free(level->enemies[i]);
         level->enemies[i] = NULL;
     }
