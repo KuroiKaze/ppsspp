@@ -28,6 +28,9 @@ typedef struct Level {
 
     SDL_Texture* txt_chest_texture;
     int txt_chest_w, txt_chest_h;
+
+    int chest_spawn_x;
+    int chest_spawn_y;
 } Level;
 
 typedef struct {

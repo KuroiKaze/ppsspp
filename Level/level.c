@@ -33,7 +33,7 @@ void level_scan_entities(Level* level, SDL_Renderer* renderer) {
     int enemy_count = 0;
     for (int i = 0; i < col->width * col->height; i++) {
         int shape = get_tile_shape(&level->map, col->data[i]);
-        if (shape == SHAPE_ZOMBIE_SPAWN || shape == SHAPE_SLIME_SPAWN) {
+        if (shape == SHAPE_ZOMBIE_SPAWN || shape == SHAPE_SLIME_SPAWN || shape == SHAPE_SHURIKENDUDE_SPAWN) {
             enemy_count++;
         }
     }
@@ -69,6 +69,10 @@ void level_scan_entities(Level* level, SDL_Renderer* renderer) {
                 level->player->entity.vel_x = 0;
                 level->player->entity.vel_y = 0;
             }
+            else if (shape == SHAPE_CHEST) { // find chest spawnpoint
+                level->chest_spawn_x = world_x;
+                level->chest_spawn_y = (world_y) - 18;
+            }
             else if (shape == SHAPE_ZOMBIE_SPAWN) {
                 Mummy* m = malloc(sizeof(Mummy));
                 *m = mummy_init(renderer, world_x, world_y); // Init first to load dimensions
@@ -82,7 +86,7 @@ void level_scan_entities(Level* level, SDL_Renderer* renderer) {
                 level->enemies[enemy_idx++] = &m->base.base; 
             }
             else if (shape == SHAPE_SLIME_SPAWN) {
-                /* Slime* s = malloc(sizeof(Slime));
+                Slime* s = malloc(sizeof(Slime));
                 *s = slime_init(renderer, world_x, world_y);
 
                 // Adjust Y based on the loaded enemy height
@@ -91,8 +95,9 @@ void level_scan_entities(Level* level, SDL_Renderer* renderer) {
                 s->base.base.spawn_x = s->base.base.entity.rect.x;
                 s->base.base.spawn_y = s->base.base.entity.rect.y;
 
-                level->enemies[enemy_idx++] = &s->base.base; */
-
+                level->enemies[enemy_idx++] = &s->base.base;
+            }
+            else if(shape == SHAPE_SHURIKENDUDE_SPAWN) {
                 ShurikenDude* m = malloc(sizeof(ShurikenDude));
                 *m = shurikenDude_init(renderer, world_x, world_y); // Init first to load dimensions
 
@@ -138,7 +143,7 @@ void level_load(Level* level, SDL_Renderer* renderer, Player* player, const char
     health_potion.type = HEALTH_POTION;
     health_potion.amount = 3; // 3x healing potion in chest
     
-    level->loot_chest = chest_init(renderer, "resources/sprites/chest-", 400, 375, health_potion);
+    level->loot_chest = chest_init(renderer, "resources/sprites/chest-", level->chest_spawn_x, level->chest_spawn_y, health_potion);
 
 
     // 1. Load Door Text

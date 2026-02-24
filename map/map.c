@@ -37,6 +37,8 @@ int get_tile_shape(Map* map, int tile_id) {
         case 9: return SHAPE_ZOMBIE_SPAWN;
         case 10: return SHAPE_SLIME_SPAWN;
         case 11: return SHAPE_PLAYER_SPAWN;
+        case 12: return SHAPE_SHURIKENDUDE_SPAWN;
+        case 13: return SHAPE_CHEST;
 
         default: return (rel >= 0 && rel < 50) ? SHAPE_SOLID : SHAPE_EMPTY;
     }
