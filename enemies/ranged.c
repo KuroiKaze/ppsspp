@@ -40,7 +40,7 @@ void enemy_handle_ranged_attack(RangedEnemy *enemy, Player *player) {
                 float player_center_x = player->entity.rect.x + (player->entity.rect.w / 2.0f);
                 float direction = (player_center_x > spawn_x) ? 1.0f : -1.0f;
 
-                float launch_offset = 50.0f; 
+                float launch_offset = 40.0f; 
                 p->x = spawn_x + (launch_offset * direction);
                 p->y = spawn_y - 10.0f;
                 

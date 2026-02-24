@@ -21,7 +21,7 @@ ShurikenDude shurikenDude_init(SDL_Renderer *renderer, int x, int y) {
     sd.base.proj_vel_x = 4.0f;   // speed of projectile
     sd.base.proj_vel_y = 0.0f;
     sd.base.proj_damage = 10;
-    sd.base.cooldown_ms = 1000; // 1 sek Cooldown
+    sd.base.cooldown_ms = 2000;
     sd.base.shoot_cooldown_end = 0;
 
     entity_load_frames(renderer, &entity->attack, ATTACK_BASE_PATH);
