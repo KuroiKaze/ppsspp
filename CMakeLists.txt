@@ -9,11 +9,15 @@ add_executable(${PROJECT_NAME} main.c player/player.c
     enemies/enemy.c
     enemies/mummy/mummy.c
     enemies/slime/slime.c
+    enemies/shurikenDude/shurikenDude.c
     level/level.c
     level/levelhandler.c
     interactables/chest.c
     bgm/bgmHandler.c
     items/item.c
+    enemies/ranged.c
+    enemies/melee.c
+    enemies/projectile.c
     )
 
 include(FindPkgConfig)
