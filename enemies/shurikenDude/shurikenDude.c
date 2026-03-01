@@ -1,10 +1,10 @@
 #include "shurikenDude.h"
 #include <SDL_image.h>
 
-#define ATTACK_BASE_PATH "resources/Gothicvania Collection Files/Assets/Characters/NPC and ENEMIES/Shuriken Dude Enemy/sprites/shuriken-dude/shuriken-dude"
-#define IDLE_BASE_PATH "resources/Gothicvania Collection Files/Assets/Characters/NPC and ENEMIES/Shuriken Dude Enemy/sprites/shuriken-dude/shuriken-dude1.png"
+#define ATTACK_BASE_PATH "resources/sprites/enemies/shurikenDude/attack/shuriken-dude"
+#define IDLE_BASE_PATH "resources/sprites/enemies/shurikenDude/attack/shuriken-dude1.png"
 
-#define PROJECTILE_BASE_PATH "resources/Gothicvania Collection Files/Assets/Characters/NPC and ENEMIES/Shuriken Dude Enemy/sprites/shuriken/shuriken"
+#define PROJECTILE_BASE_PATH "resources/sprites/enemies/shurikenDude/shuriken/shuriken"
 #define HIT_BOX_SCALE_W 0.5f
 #define HIT_BOX_SCALE_H 0.8f
 
@@ -20,7 +20,7 @@ ShurikenDude shurikenDude_init(SDL_Renderer *renderer, int x, int y) {
 
     sd.base.proj_vel_x = 4.0f;   // speed of projectile
     sd.base.proj_vel_y = 0.0f;
-    sd.base.proj_damage = 10;
+    sd.base.proj_damage = SHURIKENDUDE_DAMAGE;
     sd.base.cooldown_ms = 2000;
     sd.base.shoot_cooldown_end = 0;
 

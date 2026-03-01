@@ -29,26 +29,51 @@ int entity_load_frames(SDL_Renderer *renderer, SpriteFrameArray *out, const char
     out->sprite_w = 0;
     out->sprite_h = 0;
 
+    debug_log("FRAME_LOAD: Suche Frames in %s", base_path);
+
     for (int i = 1;; i++) {
         snprintf(path, sizeof(path), "%s%d.png", base_path, i);
-        if (!entity_frame_exists(path)) break;
+        if (!entity_frame_exists(path)) {
+            if (i == 1) debug_log("FRAME_WARN: Erste Datei nicht gefunden: %s", path);
+            break;
+        }
+
         SDL_Texture *tex = load_texture(renderer, path);
-        if (!tex) break;
+        if (!tex) {
+            debug_log("FRAME_ERROR: Fehler beim Laden von %s", path);
+            break;
+        }
+
         if (count == 0) SDL_QueryTexture(tex, NULL, NULL, &out->sprite_w, &out->sprite_h);
+        
         SDL_Texture **tmp = realloc(out->frames, sizeof(SDL_Texture*) * (count + 1));
-        if (!tmp) { SDL_DestroyTexture(tex); break; }
+        if (!tmp) { 
+            debug_log("FRAME_CRITICAL: Out of Memory bei Frame %d", i);
+            SDL_DestroyTexture(tex); 
+            break; 
+        }
         out->frames = tmp;
         out->frames[count++] = tex;
     }
+    
     out->count = count;
+    debug_log("FRAME_SUCCESS: %d Frames geladen für %s (Groesse: %dx%d)", 
+              count, base_path, out->sprite_w, out->sprite_h);
     return count;
 }
 
 int entity_load_frame(SDL_Renderer *renderer, SpriteFrameArray *out, const char *filepathname) {
+    debug_log("FRAME_SINGLE: Lade Einzelbild %s", filepathname);
     SDL_Texture *tex = load_texture(renderer, filepathname);
-    if (!tex) return 0;
+    if (!tex) {
+        debug_log("FRAME_ERROR: Konnte %s nicht laden", filepathname);
+        return 0;
+    }
     out->frames = malloc(sizeof(SDL_Texture*));
-    if (!out->frames) { SDL_DestroyTexture(tex); return 0; }
+    if (!out->frames) { 
+        SDL_DestroyTexture(tex); 
+        return 0; 
+    }
     out->frames[0] = tex;
     out->count = 1;
     SDL_QueryTexture(tex, NULL, NULL, &out->sprite_w, &out->sprite_h);
@@ -183,7 +208,11 @@ void entity_update_physics(Entity *e, Map *map, float gravity, float max_fall_sp
             }
         }
     }
-}void entity_update_animation(Entity *e, int is_moving, Uint32 speed) {
+    if (e->rect.y > 1000) { 
+        debug_log("PHYSICS_WARN: Entity bei Y=%d (aus der Map gefallen?)", e->rect.y);
+    }
+}
+void entity_update_animation(Entity *e, int is_moving, Uint32 speed) {
     Uint32 now = SDL_GetTicks();
     if (now - e->last_time < speed) return;
     e->last_time = now;
@@ -205,7 +234,15 @@ void entity_update_physics(Entity *e, Map *map, float gravity, float max_fall_sp
 }
 
 void entity_render(SDL_Renderer *renderer, Entity *e, SDL_Texture *current_texture, int camera_x, int camera_y) {
-    if (!current_texture) return;
+    if (!current_texture) {
+        // Das ist vermutlich der Grund für den unsichtbaren ShurikenDude!
+        static Uint32 last_render_err = 0;
+        if (SDL_GetTicks() - last_render_err > 5000) {
+            debug_log("RENDER_ERROR: current_texture ist NULL für Entity!");
+            last_render_err = SDL_GetTicks();
+        }
+        return;
+    }
     SDL_Rect render_rect = {
             e->rect.x - e->offset_x - camera_x,
             e->rect.y - e->offset_y - camera_y,

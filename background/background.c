@@ -3,10 +3,21 @@
 #include <SDL_image.h>
 
 extern SDL_Texture *load_texture(SDL_Renderer *renderer, const char *path);
+extern void debug_log(const char *format, ...);
 
 BackgroundLayer background_layer_init(SDL_Renderer *renderer, const char *path, float speed, float scale) {
     BackgroundLayer layer = {0};
     layer.texture = load_texture(renderer, path);
+
+    if (!layer.texture) {
+        debug_log("BG_ERROR: Konnte Textur nicht laden: %s", path);
+    } else {
+        int w, h;
+        SDL_QueryTexture(layer.texture, NULL, NULL, &w, &h);
+        debug_log("BG_SUCCESS: Layer geladen [%s]. Original: %dx%d, Speed: %.2f, Scale: %.2f", 
+                  path, w, h, speed, scale);
+    }
+
     layer.scroll_speed = speed;
     layer.scale = scale > 0.0f ? scale : 1.0f;
     return layer;
@@ -34,6 +45,12 @@ void background_layer_render(SDL_Renderer *renderer, const BackgroundLayer *laye
     float vertical_speed_factor = 0.1f;
     int offset_y = (int)(camera_y * layer->scroll_speed * vertical_speed_factor);
 
+    static Uint32 last_bg_debug = 0;
+    if (SDL_GetTicks() - last_bg_debug > 5000) {
+        debug_log("BG_RENDER: Drawing at OffsetX: %d, OffsetY: %d, ScaledW: %d", offset_x, offset_y, w);
+        last_bg_debug = SDL_GetTicks();
+    }
+    
     // --- 4. Render Loop with Scaled Rects ---
     int current_draw_x = -offset_x;
 
@@ -54,6 +71,7 @@ void background_layer_render(SDL_Renderer *renderer, const BackgroundLayer *laye
 
 void background_layer_cleanup(BackgroundLayer *layer) {
     if (layer->texture) {
+        debug_log("BG_CLEANUP: Textur freigegeben.");
         SDL_DestroyTexture(layer->texture);
         layer->texture = NULL;
     }

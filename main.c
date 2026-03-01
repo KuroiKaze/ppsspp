@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <unistd.h>
 
 #include "player/player.h"
 #include "level/level.h"
@@ -36,7 +37,8 @@ SDL_Texture *load_texture(SDL_Renderer *renderer, const char *path)
 // --- Debug Logger ---
 void debug_log(const char *format, ...)
 {
-    FILE *fp = fopen("crash_log.txt", "a");
+    // Wir erzwingen den Pfad auf den Memory Stick (Root)
+    FILE *fp = fopen("ms0:/crash_log.txt", "a"); 
     if (fp)
     {
         va_list args;
@@ -71,8 +73,11 @@ int setup_callbacks(void)
 
 int main(int argc, char *argv[])
 {
-    debug_log("=== NEW SESSION START ===");
-
+    FILE *f = fopen("ms0:/crash_log.txt", "w"); // empty log
+    if (f) {
+        fprintf(f, "=== NEW DEBUG SESSION START ===\n");
+        fclose(f);
+    }
     SDL_Window *window = NULL;
     SDL_Renderer *renderer = NULL;
     Player player = {0};
@@ -82,6 +87,9 @@ int main(int argc, char *argv[])
     setup_callbacks();
     sceCtrlSetSamplingCycle(0);
     sceCtrlSetSamplingMode(PSP_CTRL_MODE_ANALOG);
+
+    chdir("disc0:/PSP_GAME/USRDIR/");
+    sceKernelDelayThread(1000000); // 0,5 Sekunden warten (500ms)
 
     debug_log("Init SDL...");
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER) < 0)
@@ -101,6 +109,10 @@ int main(int argc, char *argv[])
             goto cleanup;
     }
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+
+    if (chdir("disc0:/PSP_GAME/USRDIR/") != 0) {
+        debug_log("Konnte Verzeichnis nicht wechseln!");
+    }
 
     player = player_init(renderer);
 
@@ -133,21 +145,18 @@ int main(int argc, char *argv[])
         if (camera_y < 0) camera_y = 0;
         if (camera_x > map_pixel_width - SCREEN_WIDTH) camera_x = map_pixel_width - SCREEN_WIDTH;
         if (camera_y > map_pixel_height - SCREEN_HEIGHT) camera_y = map_pixel_height - SCREEN_HEIGHT;
+        
+        if (game_state == 0) {
+            if (level && level->map.tiled_map) {
+                level_handler_update(&level_handler, &pad);
 
-        if (game_state == 0)
-        {
-            // Use the handler to update (checks for doors, enemies, etc.)
-            level_handler_update(&level_handler, &pad);
-
-            // Fall Death check
-            if (player.entity.rect.y > map_pixel_height + 100)
-            {
+            // Fall Death check - Nur wenn die Map eine Höhe hat!
+            if (map_pixel_height > 0 && player.entity.rect.y > map_pixel_height + 100) {
                 player_decrease_health(&player, 1000);
             }
-            if (player.entity.health <= 0) game_state = 1;
         }
-        else if (game_state == 1)
-        {
+            if (player.entity.health <= 0) game_state = 1;
+        } else if (game_state == 1) {
             if (pad.Buttons & PSP_CTRL_START)
             {
                 // Reset using the handler's current level
