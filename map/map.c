@@ -10,10 +10,27 @@ extern SDL_Texture *load_texture(SDL_Renderer *renderer, const char *path);
 
 // Helper
 char* read_file_to_string(const char* path) {
-    FILE* fp = fopen(path, "rb"); if (!fp) return NULL;
-    fseek(fp, 0, SEEK_END); long size = ftell(fp); fseek(fp, 0, SEEK_SET);
-    char* content = (char*)malloc(size + 1); fread(content, 1, size, fp); content[size] = 0;
-    fclose(fp); return content;
+    FILE* file = fopen(path, "rb");
+    if (!file) {
+        debug_log("FILE_ERROR: Konnte %s nicht oeffnen", path);
+        return NULL;
+    }
+
+    fseek(file, 0, SEEK_END);
+    long size = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    char* buffer = malloc(size + 1);
+    if (!buffer) {
+        debug_log("MALLOC_ERROR: Kein Speicher fuer JSON-Buffer (%ld Bytes)", size);
+        fclose(file);
+        return NULL;
+    }
+
+    fread(buffer, 1, size, file);
+    buffer[size] = '\0';
+    fclose(file);
+    return buffer;
 }
 
 int get_tile_shape(Map* map, int tile_id) {
@@ -59,45 +76,86 @@ int calculate_height(int shape, int ty, int offset_x) {
     }
 }
 
-int map_init(Map *map, SDL_Renderer *renderer, const char *json_path, const char** texture_paths, int texture_count) {
-    // 1. Load JSON
-    char* c = read_file_to_string(json_path); if (!c) return 0;
-    map->tiled_map = cute_tiled_load_map_from_memory(c, (int)strlen(c), 0); free(c);
-    if (!map->tiled_map) return 0;
+int map_init(Map* map, SDL_Renderer* renderer, const char* path, const char** texture_paths, int texture_count) {
+    debug_log("--- MAP_INIT START ---");
+    debug_log("Pfad: %s", path);
 
-    // 2. Dynamic GID & Texture Mapping
+    // 1. JSON laden
+    char* json_data = read_file_to_string(path);
+    if (!json_data) {
+        debug_log("MAP_ABORT: Datei-Lesefehler.");
+        return -1;
+    }
+
+    // 2. Parsen mit cute_tiled
+    map->tiled_map = cute_tiled_load_map_from_memory(json_data, strlen(json_data), NULL);
+    free(json_data);
+
+    if (!map->tiled_map) {
+        debug_log("MAP_ABORT: cute_tiled Parser-Fehler! (Check JSON Syntax)");
+        return -1;
+    }
+    debug_log("MAP_SUCCESS: JSON geparst. Groesse: %dx%d", map->tiled_map->width, map->tiled_map->height);
+
+    // 3. Tilesets und Texturen verarbeiten
     map->texture_count = 0;
+    map->collision_gid_start = 0;
     cute_tiled_tileset_t* ts = map->tiled_map->tilesets;
     int tex_idx = 0;
 
     while (ts) {
-        // Check if this is the Collision Tileset
-        // We look for "collision" in the name (case-insensitive usually, but strict here)
+        debug_log("TILESET_CHECK: Name='%s', FirstGID=%d, Count=%d", ts->name.ptr, ts->firstgid, ts->tilecount);
+
         if (strstr(ts->name.ptr, "collision") || strstr(ts->name.ptr, "Collision")) {
             map->collision_gid_start = ts->firstgid;
-            debug_log("Map: Found Collision Tileset at GID %d", map->collision_gid_start);
-        }
-        else {
-            // It's a visual tileset. Load the texture from the list provided by the user.
+            debug_log("COLLISION_GID: Startet bei %d", map->collision_gid_start);
+        } else {
             if (tex_idx < texture_count && tex_idx < MAX_TILESETS) {
-                map->textures[tex_idx] = load_texture(renderer, texture_paths[tex_idx]);
+                debug_log("TEXTURE_LOAD: Index %d, Pfad: %s", tex_idx, texture_paths[tex_idx]);
+                
+                // SDL_image Load
+                SDL_Surface* surf = IMG_Load(texture_paths[tex_idx]);
+                if (!surf) {
+                    debug_log("IMG_ERROR: %s (Check Pfad/Leerzeichen/ISO!)", IMG_GetError());
+                    map->textures[tex_idx] = NULL;
+                } else {
+                    map->textures[tex_idx] = SDL_CreateTextureFromSurface(renderer, surf);
+                    SDL_FreeSurface(surf);
+                    if (!map->textures[tex_idx]) {
+                        debug_log("SDL_ERROR: Texture Creation failed: %s", SDL_GetError());
+                    } else {
+                        debug_log("TEXTURE_SUCCESS: Geladen an Index %d", tex_idx);
+                    }
+                }
+                
                 map->tileset_firstgids[tex_idx] = ts->firstgid;
                 map->texture_count++;
                 tex_idx++;
+            } else {
+                debug_log("TILESET_WARNING: Zu viele Tilesets oder Array-Limit erreicht.");
             }
         }
         ts = ts->next;
     }
 
-    // 3. Find Collision Layer
+    // 4. Collision Layer finden
+    map->collision_layer = NULL;
     cute_tiled_layer_t* layer = map->tiled_map->layers;
     while (layer) {
-        if (layer->name.ptr && strcmp(layer->name.ptr, "Collision") == 0) {
-            map->collision_layer = layer; break;
+        debug_log("LAYER_SCAN: '%s' (Type: %d)", layer->name.ptr, layer->type);
+        if (strcmp(layer->name.ptr, "Collision") == 0) {
+            map->collision_layer = layer;
+            debug_log("COLLISION_LAYER_FOUND: Data-Pointer: %p", (void*)layer->data);
+            break;
         }
         layer = layer->next;
     }
 
+    if (!map->collision_layer) {
+        debug_log("MAP_WARNING: Kein 'Collision' Layer gefunden!");
+    }
+
+    debug_log("--- MAP_INIT END (Success) ---");
     return 1;
 }
 
