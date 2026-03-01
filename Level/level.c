@@ -177,11 +177,9 @@ void level_load(Level* level, SDL_Renderer* renderer, Player* player, const char
         debug_log("Failed to load chest text!");
     }
 
-    /*
     if (bgm_init()) {
         bgm_play(&bgm, "resources/music/medieval-ambient-236809.wav", -1); 
     }
-        */
 }
 
 void level_update(Level* level, SceCtrlData* pad, SDL_Renderer* renderer) {
