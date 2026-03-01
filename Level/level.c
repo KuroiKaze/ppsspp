@@ -25,22 +25,38 @@ bool all_enemies_dead(Level* level) {
 }
 
 void level_scan_entities(Level* level, SDL_Renderer* renderer) {
-    if (!level || !level->map.collision_layer) return;
+    if (!level || !level->map.collision_layer) {
+        debug_log("SCAN_ERROR: Kein Collision Layer vorhanden!");
+        return;
+    }
 
     cute_tiled_layer_t* col = level->map.collision_layer;
+    debug_log("SCAN_START: Layer %dx%d", col->width, col->height);
 
-    // 1. Count Enemies (Same as before)
+    // 1. Count Enemies
     int enemy_count = 0;
     for (int i = 0; i < col->width * col->height; i++) {
-        int shape = get_tile_shape(&level->map, col->data[i]);
-        if (shape == SHAPE_ZOMBIE_SPAWN || shape == SHAPE_SLIME_SPAWN || shape == SHAPE_SHURIKENDUDE_SPAWN) {
-            enemy_count++;
+        // HIER LOGGEN WIR DIE GIDS, DIE DU HÄNDISCH EINGETRAGEN HAST
+        int gid = col->data[i];
+        if (gid > 0) {
+            int shape = get_tile_shape(&level->map, gid);
+            if (shape == SHAPE_ZOMBIE_SPAWN || shape == SHAPE_SLIME_SPAWN || shape == SHAPE_SHURIKENDUDE_SPAWN) {
+                enemy_count++;
+            }
+            // Logge nur Spezial-GIDs, um das Log nicht zu fluten
+            if (gid >= 687) {
+                debug_log("FOUND_GID: %d at index %d -> Shape: %d", gid, i, shape);
+            }
         }
     }
 
+    debug_log("SCAN_INFO: Enemies gezaehlt: %d", enemy_count);
     level->enemy_count = enemy_count;
+
     if (enemy_count > 0) {
         level->enemies = malloc(sizeof(Enemy*) * enemy_count);
+        // SICHERHEIT: Array nullen, damit wir keine wilden Pointer haben
+        for(int i=0; i<enemy_count; i++) level->enemies[i] = NULL;
     } else {
         level->enemies = NULL;
     }
@@ -50,81 +66,79 @@ void level_scan_entities(Level* level, SDL_Renderer* renderer) {
     for (int y = 0; y < col->height; y++) {
         for (int x = 0; x < col->width; x++) {
             int index = y * col->width + x;
-            int shape = get_tile_shape(&level->map, col->data[index]);
+            int gid = col->data[index];
+            if (gid <= 0) continue;
 
+            int shape = get_tile_shape(&level->map, gid);
             int world_x = x * 16;
             int world_y = y * 16;
 
             if (shape == SHAPE_PLAYER_SPAWN) {
-                // Align Bottom of Player with Bottom of Tile
-                // world_y is the top of the tile.
-                // We add 16 to get to the bottom of the tile.
-                // We subtract rect.h to place the player's feet there.
-                // We subtract 2 extra pixels to spawn slightly in the air (safety buffer).
-
                 level->player->entity.rect.x = world_x;
                 level->player->entity.rect.y = (world_y + 16) - level->player->entity.rect.h - 2;
-
-                // Reset velocity to prevent carrying over momentum from previous level
-                level->player->entity.vel_x = 0;
-                level->player->entity.vel_y = 0;
+                debug_log("SPAWN_PLAYER: %d, %d", world_x, world_y);
             }
-            else if (shape == SHAPE_CHEST) { // find chest spawnpoint
+            else if (shape == SHAPE_CHEST) {
                 level->chest_spawn_x = world_x;
-                level->chest_spawn_y = (world_y) - 18;
+                level->chest_spawn_y = world_y - 18;
+                debug_log("SPAWN_CHEST: %d, %d", world_x, world_y);
             }
-            else if (shape == SHAPE_ZOMBIE_SPAWN) {
-                Mummy* m = malloc(sizeof(Mummy));
-                *m = mummy_init(renderer, world_x, world_y); // Init first to load dimensions
-
-                // Adjust Y based on the loaded enemy height
-                m->base.base.entity.rect.y = (world_y + 16) - m->base.base.entity.rect.h - 2;
-
-                // Update the spawn_y memory so resets work correctly
-                m->base.base.spawn_x = m->base.base.entity.rect.x;
-                m->base.base.spawn_y = m->base.base.entity.rect.y;
-                level->enemies[enemy_idx++] = &m->base.base; 
-            }
-            else if (shape == SHAPE_SLIME_SPAWN) {
-                Slime* s = malloc(sizeof(Slime));
-                *s = slime_init(renderer, world_x, world_y);
-
-                // Adjust Y based on the loaded enemy height
-                s->base.base.entity.rect.y = (world_y + 16) - s->base.base.entity.rect.h - 2;
-
-                s->base.base.spawn_x = s->base.base.entity.rect.x;
-                s->base.base.spawn_y = s->base.base.entity.rect.y;
-
-                level->enemies[enemy_idx++] = &s->base.base;
-            }
-            else if(shape == SHAPE_SHURIKENDUDE_SPAWN) {
-                ShurikenDude* m = malloc(sizeof(ShurikenDude));
-                *m = shurikenDude_init(renderer, world_x, world_y); // Init first to load dimensions
-
-                // Adjust Y based on the loaded enemy height
-                m->base.base.entity.rect.y = (world_y + 16) - m->base.base.entity.rect.h - 2;
-
-                // Update the spawn_y memory so resets work correctly
-                m->base.base.spawn_x = m->base.base.entity.rect.x;
-                m->base.base.spawn_y = m->base.base.entity.rect.y;
-                level->enemies[enemy_idx++] = &m->base.base;
+            else if (shape == SHAPE_ZOMBIE_SPAWN || shape == SHAPE_SLIME_SPAWN || shape == SHAPE_SHURIKENDUDE_SPAWN) {
+                if (enemy_idx < enemy_count) {
+                    if (shape == SHAPE_ZOMBIE_SPAWN) {
+                        Mummy* m = malloc(sizeof(Mummy));
+                        *m = mummy_init(renderer, world_x, world_y);
+                        m->base.base.entity.rect.y = (world_y + 16) - m->base.base.entity.rect.h - 2;
+                        m->base.base.spawn_x = m->base.base.entity.rect.x;
+                        m->base.base.spawn_y = m->base.base.entity.rect.y;
+                        level->enemies[enemy_idx++] = &m->base.base;
+                        debug_log("SPAWN_MUMMY: Index %d", enemy_idx-1);
+                    } 
+                    else if (shape == SHAPE_SLIME_SPAWN) {
+                        Slime* s = malloc(sizeof(Slime));
+                        *s = slime_init(renderer, world_x, world_y);
+                        s->base.base.entity.rect.y = (world_y + 16) - s->base.base.entity.rect.h - 2;
+                        s->base.base.spawn_x = s->base.base.entity.rect.x;
+                        s->base.base.spawn_y = s->base.base.entity.rect.y;
+                        level->enemies[enemy_idx++] = &s->base.base;
+                        debug_log("SPAWN_SLIME: Index %d", enemy_idx-1);
+                    }
+                    else if (shape == SHAPE_SHURIKENDUDE_SPAWN) {
+                        ShurikenDude* s = malloc(sizeof(ShurikenDude));
+                        *s = shurikenDude_init(renderer, world_x, world_y);
+                        s->base.base.entity.rect.y = (world_y + 16) - s->base.base.entity.rect.h - 2;
+                        s->base.base.spawn_x = s->base.base.entity.rect.x;
+                        s->base.base.spawn_y = s->base.base.entity.rect.y;
+                        level->enemies[enemy_idx++] = &s->base.base;
+                        debug_log("SPAWN_SHURIKEN: Index %d", enemy_idx-1);
+                    }
+                    // ... analog für Slime
+                }
             }
         }
     }
+    debug_log("SCAN_COMPLETE: %d Enemies erfolgreich initialisiert.", enemy_idx);
 }
 
 void level_load(Level* level, SDL_Renderer* renderer, Player* player, const char* map_path, const char** texture_paths, int tex_count, BgConfig* bg_configs) {
     if (!level || !player) return;
-
     level->player = player;
 
-    if (!map_init(&level->map, renderer, map_path, texture_paths, tex_count)) {
-        debug_log("Failed to load map: %s", map_path);
+    debug_log("DEBUG: Starte map_init...");
+    int status = map_init(&level->map, renderer, map_path, texture_paths, tex_count);
+    
+    if (status != 1) {
+        debug_log("DEBUG: map_init fehlgeschlagen mit Status %d", status);
         return;
     }
 
-    // [0] = Far Back, [1] = Mid, [2] = Fore
+    if (level->map.tiled_map == NULL) {
+        debug_log("CRITICAL: map_init sagte 0, aber tiled_map ist NULL!");
+        return;
+    }
 
+    debug_log("DEBUG: Starte background_layer_init...");
+    // Hier crasht es oft, wenn bg_configs[0].path Müll enthält
     level->layer_far_back = background_layer_init(renderer, bg_configs[0].path, bg_configs[0].speed, bg_configs[0].scale);
     level->layer_mid      = background_layer_init(renderer, bg_configs[1].path, bg_configs[1].speed, bg_configs[1].scale);
 
@@ -134,7 +148,10 @@ void level_load(Level* level, SDL_Renderer* renderer, Player* player, const char
         level->layer_fore.texture = NULL;
     }
 
+    debug_log("DEBUG: Starte level_scan_entities...");
     level_scan_entities(level, renderer);
+    
+    debug_log("DEBUG: level_load fast fertig...");
     // Chest
     level->chest_spawned = false;
 
@@ -145,8 +162,6 @@ void level_load(Level* level, SDL_Renderer* renderer, Player* player, const char
     
     level->loot_chest = chest_init(renderer, "resources/sprites/chest-", level->chest_spawn_x, level->chest_spawn_y, health_potion);
 
-
-    // 1. Load Door Text
     level->txt_door_texture = IMG_LoadTexture(renderer, "resources/ui/text_door.png");
     if (level->txt_door_texture) {
         SDL_QueryTexture(level->txt_door_texture, NULL, NULL, &level->txt_door_w, &level->txt_door_h);
@@ -162,9 +177,11 @@ void level_load(Level* level, SDL_Renderer* renderer, Player* player, const char
         debug_log("Failed to load chest text!");
     }
 
+    /*
     if (bgm_init()) {
         bgm_play(&bgm, "resources/music/medieval-ambient-236809.wav", -1); 
     }
+        */
 }
 
 void level_update(Level* level, SceCtrlData* pad, SDL_Renderer* renderer) {

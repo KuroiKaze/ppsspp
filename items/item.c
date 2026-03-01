@@ -3,8 +3,8 @@
 #include "../player/player.h"
 
 
-#define HEALTH_POTION_PATH  "resources/Gothicvania Collection Files/Assets/Items, FX and Props/Food Items/Sprites/item-114.png"
-#define MANA_POTION_PATH   "resources/Gothicvania Collection Files/Assets/Items, FX and Props/Food Items/Sprites/item-113.png"
+#define HEALTH_POTION_PATH  "resources/sprites/items/item-114.png"
+#define MANA_POTION_PATH   "resources/sprites/items/item-113.png"
 #define HEALTH_POTION_HEAL_AMOUNT 30
 #define MANA_POTION_MANA_AMOUNT 30
 
